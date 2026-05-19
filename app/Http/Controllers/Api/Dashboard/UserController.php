@@ -17,55 +17,60 @@ class UserController extends Controller
     public function index()
     {
         $search = request()->search;
-        $query = User::query();
+        $query = User::query()->with('role');
 
-        if (! TenantAccess::isSuperAdmin(auth()->user())) {
+        if (! TenantAccess::isSuperAdmin(auth()->user()) && \Schema::hasColumn('users', 'partner_id')) {
             $query->where('partner_id', auth()->user()->partner_id);
         }
         if ($search) {
             $query = $query->where('name', 'like', '%' . $search . '%');
         }
-        $users = $query->paginate(request()->limit);
-        return response()->success($users, 'Users retrieved successfully');
+        $users = $query->paginate((int) request()->get('limit', 10));
+
+        return response()->success([
+            'list' => $users->getCollection()->map(fn (User $user) => $this->dashboardUser($user))->values(),
+            'metaData' => [
+                'total' => $users->total(),
+                'page' => $users->currentPage(),
+                'limit' => $users->perPage(),
+                'lastPage' => $users->lastPage(),
+            ],
+        ], 'Users retrieved successfully');
     }
 
     public function store(Request $request)
     {
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:255',
+            'fullName' => 'required_without:name|max:255',
+            'name' => 'required_without:fullName|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'mobile' => 'required|numeric|unique:users',
-            'role_id' => 'required|integer|exists:roles,id',
-            'avatar' => 'required',
+            'password' => 'required|string|min:6',
+            'mobile' => 'nullable|string|unique:users',
+            'role' => 'required_without:role_id|string',
+            'role_id' => 'required_without:role|integer|exists:roles,id',
+            'avatar' => 'nullable',
             'type' => 'required',
-            'partner_id' => 'nullable|integer|exists:partners,id',
-            'country_id' => 'required|exists:countries,id',
-            'city_id' => 'required|exists:cities,id',
+            'companyId' => 'nullable',
         ]);
 
         if ($validator->fails()) {
             return response()->error('Validation failed', 422, $validator->errors(), 'VALIDATION_ERROR');
         }
 
-        $partnerId = TenantAccess::partnerIdForCreate(auth()->user(), $request->partner_id);
-        $roleId = $this->allowedRoleId($request->role_id);
+        $roleId = $this->allowedRoleId($request->role_id ?: $this->roleIdByName($request->role));
 
         $user = User::create([
-            'name' => $request->name,
+            'name' => $request->fullName ?: $request->name,
             'email' => $request->email,
             'mobile' => $request->mobile,
             'role_id' => $roleId,
             'avatar' => $request->avatar,
             'type' => $request->type,
-            'partner_id' => $partnerId,
-            'country_id' => $request->country_id,
-            'city_id' => $request->city_id,
             'password' => Hash::make($request->password)
         ]);
 
-        return response()->success($user, 'User created successfully');
+        return response()->success($this->dashboardUser($user->fresh('role')), 'User created successfully');
 
     }
 
@@ -76,7 +81,7 @@ class UserController extends Controller
     {
         $this->authorizePartnerAccess($user);
 
-        return response()->success(userTransform($user), 'User retrieved successfully');
+        return response()->success($this->dashboardUser($user->loadMissing('role')), 'User retrieved successfully');
     }
 
     /**
@@ -93,16 +98,14 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'mobile' => [
-                'required',
-                'numeric',
+                'nullable',
+                'string',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'role_id' => 'required|integer|exists:roles,id',
+            'role' => 'sometimes|string',
+            'role_id' => 'sometimes|integer|exists:roles,id',
             'avatar' => 'nullable',
             'type' => 'required',
-            'partner_id' => 'nullable|integer|exists:partners,id',
-            'country_id' => 'required',
-            'city_id' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -115,7 +118,9 @@ class UserController extends Controller
             $user->avatar = $request->avatar;
             $user->save();
         }
-        $roleId = $this->allowedRoleId($request->role_id);
+        $roleId = $request->filled('role_id') || $request->filled('role')
+            ? $this->allowedRoleId($request->role_id ?: $this->roleIdByName($request->role))
+            : $user->role_id;
 
         $user->update([
             'name' => $request->name,
@@ -123,11 +128,9 @@ class UserController extends Controller
             'mobile' => $request->mobile,
             'role_id' => $roleId,
             'type' => $request->type,
-            'country_id' => $request->country_id,
-            'city_id' => $request->city_id,
         ]);
 
-        return response()->success($user->fresh(), 'User updated successfully');
+        return response()->success($this->dashboardUser($user->fresh('role')), 'User updated successfully');
     }
 
     private function authorizePartnerAccess(User $user): void
@@ -147,8 +150,34 @@ class UserController extends Controller
 
         $role = Role::query()->findOrFail($roleId);
 
-        abort_if(in_array($role->name, ['Super Admin', 'Admin'], true), 403);
+        abort_if(in_array($role->name, ['SUPER_ADMIN', 'ADMIN', 'Super Admin', 'Admin'], true), 403);
 
         return $roleId;
+    }
+
+    private function roleIdByName(string $role): int
+    {
+        return (int) Role::query()
+            ->whereIn('name', [$role, strtoupper($role)])
+            ->valueOrFail('id');
+    }
+
+    private function dashboardUser(User $user): array
+    {
+        $name = $user->name;
+        if (is_array($name)) {
+            $name = $name['en'] ?? $name['ar'] ?? reset($name) ?: null;
+        }
+
+        return [
+            'id' => $user->id,
+            '_id' => (string) $user->id,
+            'name' => $name,
+            'email' => $user->email,
+            'role' => $user->role?->name,
+            'type' => $user->type,
+            'companyId' => null,
+            'createdAt' => optional($user->created_at)->toJSON(),
+        ];
     }
 }

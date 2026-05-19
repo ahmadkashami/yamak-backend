@@ -44,6 +44,7 @@ class RoleController extends Controller
         }
         $role = Role::create([
             'name' => $request->name,
+            'guard_name' => 'web',
             'display_name' => $request->display_name,
         ]);
         return response()->success($role, 'Role created successfully');
@@ -81,6 +82,7 @@ class RoleController extends Controller
 
         $role->update([
             'name' => $request->name,
+            'guard_name' => $role->guard_name ?: 'web',
             'display_name' => $request->display_name,
         ]);
 
