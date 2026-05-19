@@ -20,7 +20,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $with = ['role', 'city', 'country', 'partner'];
+    protected $with = ['role'];
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',

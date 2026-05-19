@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Dashboard\AuthController;
 
 Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
     Route::get('/', function () {
@@ -19,4 +20,12 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
             ],
         ]);
     })->name('root');
+
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware(['auth:sanctum', 'api.area:dashboard'])->group(function () {
+        Route::get('sys-users/profile', [AuthController::class, 'profile'])->name('sys_users.profile');
+        Route::put('sys-users/profile', [AuthController::class, 'updateProfile'])->name('sys_users.profile.update');
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    });
 });

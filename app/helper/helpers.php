@@ -38,9 +38,14 @@ if (!function_exists('tourTransform')) {
 if (!function_exists('guideTransform')) {
     function userTransform($item): array
     {
+        $name = $item->name;
+        if (is_array($name)) {
+            $name = $name['en'] ?? $name['ar'] ?? reset($name) ?: null;
+        }
+
         return [
             "id" => $item->id,
-            "name" => $item->name,
+            "name" => $name,
             "email" => $item->email,
             "mobile" => $item->mobile,
             "type" => $item->type,
@@ -50,11 +55,11 @@ if (!function_exists('guideTransform')) {
             "cityId" => $item->city_id,
             "partnerId" => $item->partner_id,
             "roleName" => $item->role?->name,
-            "partnerName" => $item->partner?->name,
-            "partnerEmail" => $item->partner?->email,
-            "partnerPhone" => $item->partner?->phone,
-            "partnerLogo" => $item->partner?->logo,
-            "partnerStatus" => $item->partner?->status,
+            "partnerName" => null,
+            "partnerEmail" => null,
+            "partnerPhone" => null,
+            "partnerLogo" => null,
+            "partnerStatus" => null,
             "countryName" => $item->country?->name,
             "cityName" => $item->city?->name,
         ];

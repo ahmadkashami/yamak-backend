@@ -30,19 +30,28 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->error('invalid_credentials', 401, null, 'UNAUTHORIZED');
         }
-        $user = \App\Models\User::with(['role', 'partner', 'city', 'country'])->where('email', $request['email'])->firstOrFail();
+        $user = \App\Models\User::with(['role'])->where('email', $request['email'])->firstOrFail();
         $token = $user->createToken('dashboard_token', ['dashboard'])->plainTextToken;
 
         return response()->success([
             'user' => userTransform($user),
-                'access_token' => $token,
-                'token_type' => 'Bearer',
+            'accessToken' => $token,
+            'token_type' => 'Bearer',
         ], 'login_successful');
     }
 
+    public function profile(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return response()->success(userTransform($request->user()->loadMissing('role')));
+    }
 
     public function updateProfile(UpdateProfileRequest $request)
     {
@@ -54,7 +63,7 @@ class AuthController extends Controller
 
     public function logout(): \Illuminate\Http\JsonResponse
     {
-        auth()->user()->tokens()->delete();
+        auth()->user()?->currentAccessToken()?->delete();
 
         return response()->success(null, 'logout_successful');
     }
