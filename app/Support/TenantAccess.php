@@ -16,7 +16,7 @@ class TenantAccess
             return false;
         }
 
-        return blank($user->partner_id) && in_array($user->role?->name, ['Super Admin', 'Admin'], true);
+        return blank($user->partner_id) && in_array($user->role?->name, ['SUPER_ADMIN', 'ADMIN', 'Super Admin', 'Admin'], true);
     }
 
     public static function scopeToPartner(Builder $query, ?User $user = null): Builder

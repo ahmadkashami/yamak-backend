@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function register(RegisterUserRequest $request)
     {
         $user = $this->profiles->register($request);
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('dashboard_token', ['dashboard'])->plainTextToken;
 
         return response()->success([
             'user' => userTransform($user),
@@ -34,7 +34,7 @@ class AuthController extends Controller
             return response()->error('invalid_credentials', 401, null, 'UNAUTHORIZED');
         }
         $user = \App\Models\User::with(['role', 'partner', 'city', 'country'])->where('email', $request['email'])->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('dashboard_token', ['dashboard'])->plainTextToken;
 
         return response()->success([
             'user' => userTransform($user),
