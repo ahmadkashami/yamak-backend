@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Dashboard\BranchController;
 use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\CityController;
 use App\Http\Controllers\Api\Dashboard\CountryController;
+use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\DriverController;
 use App\Http\Controllers\Api\Dashboard\FilesUploadController;
 use App\Http\Controllers\Api\Dashboard\NotificationController;
@@ -49,6 +50,7 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::get('sys-users/profile', [AuthController::class, 'profile'])->name('sys_users.profile');
         Route::put('sys-users/profile', [AuthController::class, 'updateProfile'])->name('sys_users.profile.update');
         Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
         Route::apiResource('sys-users', UserController::class)
             ->parameters(['sys-users' => 'user'])
             ->except(['destroy']);
