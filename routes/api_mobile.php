@@ -5,9 +5,11 @@ use App\Http\Controllers\Api\Mobile\AdController;
 use App\Http\Controllers\Api\Mobile\AppSettingController;
 use App\Http\Controllers\Api\Mobile\AuthController;
 use App\Http\Controllers\Api\Mobile\RequestController;
+use App\Http\Controllers\Api\Mobile\ServiceController;
 use App\Http\Controllers\Api\Mobile\UserCarController;
 use App\Http\Controllers\Api\Mobile\UserController;
 use App\Http\Controllers\Api\Mobile\UserNotificationController;
+use App\Http\Controllers\Api\Mobile\VehicleController;
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('/', function () {
@@ -40,6 +42,10 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::post('auth/send-reset-password', [AuthController::class, 'sendResetPassword'])->name('auth.send_reset_password');
     Route::post('auth/check-reset-password', [AuthController::class, 'checkResetPassword'])->name('auth.check_reset_password');
     Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->name('auth.reset_password');
+    Route::get('services/{service}/vehicles', [ServiceController::class, 'vehicles'])->name('services.vehicles');
+    Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::apiResource('requests', RequestController::class)->except(['create', 'edit']);
 
     Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
