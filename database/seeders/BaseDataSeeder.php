@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
+use App\Models\AppUser;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
@@ -31,6 +32,7 @@ class BaseDataSeeder extends Seeder
 
         $this->seedDemoAdmin();
         $this->seedLocations();
+        $this->seedDemoAppUser();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
@@ -97,6 +99,23 @@ class BaseDataSeeder extends Seeder
             [
                 'name_ar' => 'Kuwait City',
                 'status' => 'active',
+            ]
+        );
+    }
+
+    private function seedDemoAppUser(): void
+    {
+        AppUser::query()->updateOrCreate(
+            ['email' => 'app.user@example.com'],
+            [
+                'name' => 'Demo App User',
+                'phone' => '500000002',
+                'password' => Hash::make('123456'),
+                'gender' => 'male',
+                'language' => 'en',
+                'status' => 'active',
+                'is_email_verified' => true,
+                'last_login' => now(),
             ]
         );
     }

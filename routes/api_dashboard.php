@@ -2,11 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Dashboard\AuthController;
+use App\Http\Controllers\Api\Dashboard\AppUserController;
 use App\Http\Controllers\Api\Dashboard\BranchController;
 use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\CityController;
 use App\Http\Controllers\Api\Dashboard\CountryController;
 use App\Http\Controllers\Api\Dashboard\DriverController;
+use App\Http\Controllers\Api\Dashboard\RequestController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\ServiceController;
 use App\Http\Controllers\Api\Dashboard\StateController;
@@ -62,5 +64,7 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::get('driver/list-ids', [DriverController::class, 'listIds'])->name('driver.list_ids');
         Route::apiResource('driver', DriverController::class)->parameters(['driver' => 'driver']);
         Route::apiResource('vehicles', VehicleController::class)->only(['index', 'store', 'show', 'update']);
+        Route::apiResource('app-users', AppUserController::class)->only(['index', 'show']);
+        Route::apiResource('requests', RequestController::class)->only(['index', 'store']);
     });
 });
