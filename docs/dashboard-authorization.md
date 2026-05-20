@@ -16,6 +16,7 @@ This document records the current Laravel dashboard authorization behavior for m
 | --- | --- | --- | --- | --- |
 | GET | `/api/dashboard/v1/` | route closure | Public | Health/root response for migration parity. |
 | POST | `/api/dashboard/v1/auth/login` | `Dashboard\AuthController@login` | Public | Creates Sanctum token with `dashboard` ability. |
+| POST | `/api/dashboard/v1/files-upload` | `Dashboard\FilesUploadController@store` | Public | Kept public for Nest parity and public website upload compatibility; file type and size validation still apply. |
 | POST | `/api/dashboard/v1/auth/logout` | `Dashboard\AuthController@logout` | Authenticated dashboard token | Deletes the current access token. |
 | GET | `/api/dashboard/v1/dashboard` | `Dashboard\DashboardController@index` | Authenticated dashboard token | Returns dashboard statistics counters for websites, drivers, companies, services, app users, vehicles, and branches. |
 | GET | `/api/dashboard/v1/sys-users/profile` | `Dashboard\AuthController@profile` | Authenticated dashboard token | Used immediately by `yamak-dashboard` after login. |

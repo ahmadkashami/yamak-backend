@@ -45,6 +45,7 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
 
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
     Route::get('websites/domains', [WebsiteController::class, 'byDomain'])->name('websites.domains');
+    Route::post('files-upload', [FilesUploadController::class, 'store'])->name('files-upload.store');
 
     Route::middleware(['auth:sanctum', 'api.area:dashboard'])->group(function () {
         Route::get('sys-users/profile', [AuthController::class, 'profile'])->name('sys_users.profile');
@@ -84,7 +85,6 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
             ->only(['index', 'store', 'show', 'update']);
         Route::post('notifications/users', [NotificationController::class, 'sendToUser'])->name('notifications.users');
         Route::post('notifications/topics', [NotificationController::class, 'sendToTopic'])->name('notifications.topics');
-        Route::post('files-upload', [FilesUploadController::class, 'store'])->name('files-upload.store');
         Route::get('websites/companies/{company}', [WebsiteController::class, 'byCompany'])->name('websites.companies');
         Route::apiResource('websites', WebsiteController::class)->only(['index', 'store', 'update']);
         Route::get('website-themes/websites/{website}', [WebsiteThemeController::class, 'byWebsite'])->name('website-themes.websites');
