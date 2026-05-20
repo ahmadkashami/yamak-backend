@@ -33,6 +33,7 @@ Route::prefix('driver/v1')->name('api.driver.')->group(function () use ($driverH
         Route::put('vehicles/location', [VehicleController::class, 'updateLocation'])->name('vehicles.location');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::post('vehicles/link', [VehicleController::class, 'link'])->name('vehicles.link');
+        Route::post('vehicles/unlink', [VehicleController::class, 'unlink'])->name('vehicles.unlink');
     });
 });
 
@@ -48,5 +49,6 @@ Route::prefix('driver-app/v1')->name('api.driver_legacy.')->group(function () us
         Route::put('vehicles/location', [VehicleController::class, 'updateLocation'])->name('vehicles.location');
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::post('vehicles/link', [VehicleController::class, 'link'])->name('vehicles.link');
+        Route::post('vehicles/unlink', [VehicleController::class, 'unlink'])->name('vehicles.unlink');
     });
 });

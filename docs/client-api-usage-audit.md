@@ -126,7 +126,7 @@ Token behavior:
 
 - `mobile-rn` has one register call using `/api/mobile/client/v1/register` while its base URL already includes `/api/mobile/v1/`. This must be normalized during mobile auth migration.
 - `yamak-dashboard` still needs route-by-route smoke testing against Laravel responses before switching production traffic.
-- `yamak-drivers` uses `api/driver/v1`, while the NestJS baseline also used `api/driver-app/v1`. Laravel currently supports both roots for health, but driver workflow routes still need implementation.
+- `yamak-drivers` uses `api/driver/v1`, while the NestJS baseline also used `api/driver-app/v1`. Laravel currently supports both roots during migration.
 - Client token storage keys differ:
   - dashboard/web: `accessToken`
   - drivers: `token`

@@ -107,6 +107,28 @@ class VehicleController extends Controller
         return response()->success($dashboardVehicles->vehicleResource($vehicle->fresh(['branch', 'company', 'services', 'drivers', 'currentDriver'])));
     }
 
+    public function unlink(Request $request, DashboardVehicleController $dashboardVehicles): \Illuminate\Http\JsonResponse
+    {
+        /** @var Driver $driver */
+        $driver = $request->user();
+        $vehicle = $this->vehicleForDriver($driver);
+
+        if (! $vehicle) {
+            return response()->error('no vehicle found', 404);
+        }
+
+        if ((int) $vehicle->current_driver_id !== (int) $driver->id) {
+            return response()->error('vehicle not found ', 404);
+        }
+
+        $vehicle->update([
+            'current_driver_id' => null,
+            'work_status' => 'offline',
+        ]);
+
+        return response()->success($dashboardVehicles->vehicleResource($vehicle->fresh(['branch', 'company', 'services', 'drivers', 'currentDriver'])));
+    }
+
     private function vehicleForDriver(Driver $driver): ?Vehicle
     {
         return Vehicle::query()
