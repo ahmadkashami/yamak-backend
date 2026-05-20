@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Dashboard\AuthController;
 use App\Http\Controllers\Api\Dashboard\BranchController;
 use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
+use App\Http\Controllers\Api\Dashboard\ServiceController;
 use App\Http\Controllers\Api\Dashboard\UserController;
 
 Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
@@ -44,5 +45,7 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::get('branches/{branch}/drivers', [BranchController::class, 'drivers'])->name('branches.drivers');
         Route::get('branches/{branch}/free-drivers', [BranchController::class, 'freeDrivers'])->name('branches.free_drivers');
         Route::apiResource('branches', BranchController::class)->except(['destroy']);
+        Route::get('services/list-ids', [ServiceController::class, 'listIds'])->name('services.list_ids');
+        Route::apiResource('services', ServiceController::class);
     });
 });
