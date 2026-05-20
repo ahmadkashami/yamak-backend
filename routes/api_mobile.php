@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Mobile\AdController;
 use App\Http\Controllers\Api\Mobile\AppSettingController;
 use App\Http\Controllers\Api\Mobile\AuthController;
+use App\Http\Controllers\Api\Mobile\UserCarController;
 use App\Http\Controllers\Api\Mobile\UserController;
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
@@ -40,5 +41,8 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::get('app-users/profile', [UserController::class, 'profile'])->name('app-users.profile');
         Route::patch('app-users/profile', [UserController::class, 'updateProfile'])->name('app-users.profile.update');
         Route::delete('app-users/account', [UserController::class, 'deleteAccount'])->name('app-users.account.delete');
+        Route::get('user-cars', [UserCarController::class, 'index'])->name('user-cars.index');
+        Route::post('user-cars', [UserCarController::class, 'store'])->name('user-cars.store');
+        Route::delete('user-cars/{userCar}', [UserCarController::class, 'destroy'])->name('user-cars.destroy');
     });
 });
