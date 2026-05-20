@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\CityController;
 use App\Http\Controllers\Api\Dashboard\CountryController;
 use App\Http\Controllers\Api\Dashboard\DriverController;
+use App\Http\Controllers\Api\Dashboard\NotificationController;
 use App\Http\Controllers\Api\Dashboard\RequestController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\ServiceController;
@@ -78,6 +79,8 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('app-setting', AppSettingController::class)
             ->parameters(['app-setting' => 'appSetting'])
             ->only(['index', 'store', 'show', 'update']);
+        Route::post('notifications/users', [NotificationController::class, 'sendToUser'])->name('notifications.users');
+        Route::post('notifications/topics', [NotificationController::class, 'sendToTopic'])->name('notifications.topics');
         Route::get('websites/companies/{company}', [WebsiteController::class, 'byCompany'])->name('websites.companies');
         Route::apiResource('websites', WebsiteController::class)->only(['index', 'store', 'update']);
         Route::get('website-themes/websites/{website}', [WebsiteThemeController::class, 'byWebsite'])->name('website-themes.websites');
