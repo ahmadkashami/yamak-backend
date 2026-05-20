@@ -31,4 +31,19 @@ class Branch extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function drivers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Driver::class);
+    }
+
+    public function vehicles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
+
+    public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Service::class)->withTimestamps();
+    }
 }

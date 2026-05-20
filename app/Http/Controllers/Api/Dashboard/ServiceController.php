@@ -116,7 +116,7 @@ class ServiceController extends Controller
         return $code;
     }
 
-    private function serviceResource(Service $service): array
+    public function serviceResource(Service $service): array
     {
         return [
             'id' => $service->id,

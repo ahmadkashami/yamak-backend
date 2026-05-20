@@ -26,4 +26,14 @@ class Company extends Model
     {
         return $this->hasMany(Branch::class);
     }
+
+    public function drivers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Driver::class);
+    }
+
+    public function vehicles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Vehicle::class);
+    }
 }

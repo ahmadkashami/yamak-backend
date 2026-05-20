@@ -72,14 +72,18 @@ class BranchController extends Controller
         ])->values());
     }
 
-    public function drivers(): \Illuminate\Http\JsonResponse
+    public function drivers(Branch $branch, Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->success([]);
+        $request->merge(['branchId' => $branch->id]);
+
+        return app(DriverController::class)->index($request);
     }
 
-    public function freeDrivers(): \Illuminate\Http\JsonResponse
+    public function freeDrivers(Branch $branch, Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->success(['list' => [], 'metaData' => ['total' => 0, 'page' => 1, 'limit' => 10, 'lastPage' => 1]]);
+        $request->merge(['branchId' => $branch->id, 'filterType' => 'freeDrivers']);
+
+        return app(DriverController::class)->index($request);
     }
 
     public function branchResource(Branch $branch): array

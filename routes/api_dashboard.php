@@ -6,10 +6,12 @@ use App\Http\Controllers\Api\Dashboard\BranchController;
 use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\CityController;
 use App\Http\Controllers\Api\Dashboard\CountryController;
+use App\Http\Controllers\Api\Dashboard\DriverController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\ServiceController;
 use App\Http\Controllers\Api\Dashboard\StateController;
 use App\Http\Controllers\Api\Dashboard\UserController;
+use App\Http\Controllers\Api\Dashboard\VehicleController;
 
 Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
     Route::get('/', function () {
@@ -57,5 +59,8 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('states', StateController::class)->only(['index', 'show']);
         Route::post('cities/bulk', [CityController::class, 'storeBulk'])->name('cities.bulk');
         Route::apiResource('cities', CityController::class)->only(['index', 'show']);
+        Route::get('driver/list-ids', [DriverController::class, 'listIds'])->name('driver.list_ids');
+        Route::apiResource('driver', DriverController::class)->parameters(['driver' => 'driver']);
+        Route::apiResource('vehicles', VehicleController::class)->only(['index', 'store', 'show', 'update']);
     });
 });

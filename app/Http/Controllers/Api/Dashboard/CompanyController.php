@@ -63,19 +63,25 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function drivers(): \Illuminate\Http\JsonResponse
+    public function drivers(Company $company, Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->success(['list' => [], 'metaData' => $this->emptyMeta()]);
+        $request->merge(['companyId' => $company->id]);
+
+        return app(DriverController::class)->index($request);
     }
 
-    public function freeDrivers(): \Illuminate\Http\JsonResponse
+    public function freeDrivers(Company $company, Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->success(['list' => [], 'metaData' => $this->emptyMeta()]);
+        $request->merge(['companyId' => $company->id, 'filterType' => 'freeDrivers']);
+
+        return app(DriverController::class)->index($request);
     }
 
-    public function vehicles(): \Illuminate\Http\JsonResponse
+    public function vehicles(Company $company, Request $request): \Illuminate\Http\JsonResponse
     {
-        return response()->success(['list' => [], 'metaData' => $this->emptyMeta()]);
+        $request->merge(['companyId' => $company->id]);
+
+        return app(VehicleController::class)->index($request);
     }
 
     private function rules(bool $creating = true): array
@@ -119,7 +125,7 @@ class CompanyController extends Controller
         return 'COM-'.$prefix.'-'.Str::upper(Str::random(5));
     }
 
-    private function companyResource(Company $company): array
+    public function companyResource(Company $company): array
     {
         return [
             'id' => $company->id,
