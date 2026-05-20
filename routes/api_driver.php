@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Driver\AuthController;
 use App\Http\Controllers\Api\Driver\DriverController;
+use App\Http\Controllers\Api\Driver\VehicleController;
 
 $driverHealth = function () {
     return response()->json([
@@ -28,6 +29,10 @@ Route::prefix('driver/v1')->name('api.driver.')->group(function () use ($driverH
     Route::middleware(['auth:sanctum', 'api.area:driver'])->group(function () {
         Route::get('drivers/profile', [DriverController::class, 'profile'])->name('drivers.profile');
         Route::put('drivers/profile', [DriverController::class, 'updateProfile'])->name('drivers.profile.update');
+        Route::get('vehicles/owner', [VehicleController::class, 'owner'])->name('vehicles.owner');
+        Route::put('vehicles/location', [VehicleController::class, 'updateLocation'])->name('vehicles.location');
+        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route::post('vehicles/link', [VehicleController::class, 'link'])->name('vehicles.link');
     });
 });
 
@@ -39,5 +44,9 @@ Route::prefix('driver-app/v1')->name('api.driver_legacy.')->group(function () us
     Route::middleware(['auth:sanctum', 'api.area:driver'])->group(function () {
         Route::get('drivers/profile', [DriverController::class, 'profile'])->name('drivers.profile');
         Route::put('drivers/profile', [DriverController::class, 'updateProfile'])->name('drivers.profile.update');
+        Route::get('vehicles/owner', [VehicleController::class, 'owner'])->name('vehicles.owner');
+        Route::put('vehicles/location', [VehicleController::class, 'updateLocation'])->name('vehicles.location');
+        Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+        Route::post('vehicles/link', [VehicleController::class, 'link'])->name('vehicles.link');
     });
 });
