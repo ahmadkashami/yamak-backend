@@ -33,7 +33,9 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::post('auth/sendCode', [AuthController::class, 'sendCode'])->name('auth.send_code');
     Route::post('auth/checkCode', [AuthController::class, 'checkCode'])->name('auth.check_code');
     Route::post('auth/signup', [AuthController::class, 'signup'])->name('auth.signup');
+    Route::post('auth/signup-social', [AuthController::class, 'signupSocial'])->name('auth.signup_social');
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('auth/login-social', [AuthController::class, 'loginSocial'])->name('auth.login_social');
     Route::post('auth/verify-email', [AuthController::class, 'verifyEmail'])->name('auth.verify_email');
     Route::post('auth/send-reset-password', [AuthController::class, 'sendResetPassword'])->name('auth.send_reset_password');
     Route::post('auth/check-reset-password', [AuthController::class, 'checkResetPassword'])->name('auth.check_reset_password');

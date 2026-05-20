@@ -6,7 +6,9 @@ use App\Http\Controllers\Api\Dashboard\AppUserController;
 use App\Http\Controllers\Controller;
 use App\Models\AppUser;
 use App\Models\UserOtp;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -148,6 +150,62 @@ class AuthController extends Controller
         ]);
     }
 
+    public function signupSocial(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
+    {
+        $socialUser = $this->socialUser($request);
+
+        if (! $socialUser) {
+            return response()->error('invalid credentials', 400);
+        }
+
+        $existingUser = AppUser::query()
+            ->whereRaw('lower(email) = ?', [strtolower($socialUser['email'])])
+            ->where('is_email_verified', true)
+            ->first();
+
+        if ($existingUser) {
+            return response()->error('already registered', 400);
+        }
+
+        $user = AppUser::query()->create([
+            'email' => strtolower($socialUser['email']),
+            'name' => $socialUser['name'],
+            'is_email_verified' => true,
+            'is_social_signup' => true,
+            'status' => 'active',
+        ]);
+
+        return response()->success([
+            'user' => $appUsers->appUserResource($user),
+            'accessToken' => $user->createToken('mobile_token', ['mobile'])->plainTextToken,
+        ]);
+    }
+
+    public function loginSocial(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
+    {
+        $socialUser = $this->socialUser($request);
+
+        if (! $socialUser) {
+            return response()->error('invalid credentials', 400);
+        }
+
+        $user = AppUser::query()
+            ->whereRaw('lower(email) = ?', [strtolower($socialUser['email'])])
+            ->where('is_email_verified', true)
+            ->first();
+
+        if (! $user) {
+            return response()->error('user not registered', 400);
+        }
+
+        $user->forceFill(['last_login' => now()])->save();
+
+        return response()->success([
+            'user' => $appUsers->appUserResource($user->fresh()),
+            'accessToken' => $user->createToken('mobile_token', ['mobile'])->plainTextToken,
+        ]);
+    }
+
     public function verifyEmail(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
@@ -254,5 +312,95 @@ class AuthController extends Controller
     private function newCode(): string
     {
         return (string) random_int(1000, 9999);
+    }
+
+    private function socialUser(Request $request): ?array
+    {
+        $data = $request->validate([
+            'googleAccessToken' => ['nullable', 'string'],
+            'facebookAccessToken' => ['nullable', 'string'],
+            'appleAccessToken' => ['nullable', 'string'],
+            'appleInfo' => ['nullable', 'array'],
+        ]);
+
+        try {
+            if (! empty($data['googleAccessToken'])) {
+                return $this->googleUser($data['googleAccessToken']);
+            }
+
+            if (! empty($data['facebookAccessToken'])) {
+                return $this->facebookUser($data['facebookAccessToken']);
+            }
+
+            if (! empty($data['appleAccessToken'])) {
+                return $this->appleUser($data['appleAccessToken'], $data['appleInfo'] ?? []);
+            }
+        } catch (RequestException) {
+            return null;
+        }
+
+        return null;
+    }
+
+    private function googleUser(string $token): ?array
+    {
+        $payload = Http::get('https://oauth2.googleapis.com/tokeninfo', [
+            'id_token' => $token,
+        ])->throw()->json();
+
+        $clientId = config('services.google.client_id');
+
+        if ($clientId && ($payload['aud'] ?? null) !== $clientId) {
+            return null;
+        }
+
+        if (empty($payload['email'])) {
+            return null;
+        }
+
+        return [
+            'email' => $payload['email'],
+            'name' => $payload['name'] ?? $payload['email'],
+        ];
+    }
+
+    private function facebookUser(string $token): ?array
+    {
+        $payload = Http::get('https://graph.facebook.com/me', [
+            'access_token' => $token,
+            'fields' => 'id,name,email',
+        ])->throw()->json();
+
+        if (empty($payload['email'])) {
+            return null;
+        }
+
+        return [
+            'email' => $payload['email'],
+            'name' => $payload['name'] ?? $payload['email'],
+        ];
+    }
+
+    private function appleUser(string $token, array $appleInfo): ?array
+    {
+        $parts = explode('.', $token);
+
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+
+        if (empty($payload['email'])) {
+            return null;
+        }
+
+        $fullName = $appleInfo['fullName'] ?? [];
+        $name = trim(($fullName['givenName'] ?? '').' '.($fullName['familyName'] ?? ''));
+
+        return [
+            'email' => $payload['email'],
+            'name' => $name ?: $payload['email'],
+        ];
     }
 }
