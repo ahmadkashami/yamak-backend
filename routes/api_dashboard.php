@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Dashboard\AuthController;
+use App\Http\Controllers\Api\Dashboard\BranchController;
+use App\Http\Controllers\Api\Dashboard\CompanyController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\UserController;
 
@@ -33,5 +35,14 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
             ->parameters(['sys-users' => 'user'])
             ->except(['destroy']);
         Route::apiResource('roles', RoleController::class)->except(['destroy']);
+        Route::get('companies/{company}/branches', [CompanyController::class, 'branches'])->name('companies.branches');
+        Route::get('companies/{company}/drivers', [CompanyController::class, 'drivers'])->name('companies.drivers');
+        Route::get('companies/{company}/free-drivers', [CompanyController::class, 'freeDrivers'])->name('companies.free_drivers');
+        Route::get('companies/{company}/vehicles', [CompanyController::class, 'vehicles'])->name('companies.vehicles');
+        Route::apiResource('companies', CompanyController::class)->except(['destroy']);
+        Route::get('branches/{branch}/services', [BranchController::class, 'services'])->name('branches.services');
+        Route::get('branches/{branch}/drivers', [BranchController::class, 'drivers'])->name('branches.drivers');
+        Route::get('branches/{branch}/free-drivers', [BranchController::class, 'freeDrivers'])->name('branches.free_drivers');
+        Route::apiResource('branches', BranchController::class)->except(['destroy']);
     });
 });
