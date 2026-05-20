@@ -4,7 +4,7 @@ This document records the current Laravel dashboard authorization behavior for m
 
 ## Current Rule
 
-- Public dashboard routes are limited to health/root and login.
+- Public dashboard routes are limited to health/root, login, website domain lookup, and file upload.
 - Protected dashboard routes use both `auth:sanctum` and `api.area:dashboard`.
 - `api.area:dashboard` requires the current Sanctum token to have the `dashboard` ability.
 - No extra role hardening is applied silently at the route layer yet.
