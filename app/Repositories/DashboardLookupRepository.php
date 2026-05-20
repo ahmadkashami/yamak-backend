@@ -33,18 +33,31 @@ class DashboardLookupRepository
     private function countries(): Collection
     {
         return Country::query()
-            ->select(['id', 'name', 'status'])
+            ->select(['id', 'name_en', 'name_ar', 'status'])
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(fn (Country $country) => [
+                'id' => $country->id,
+                '_id' => (string) $country->id,
+                'name' => ['en' => $country->name_en, 'ar' => $country->name_ar],
+                'status' => $country->status,
+            ]);
     }
 
     private function cities(): Collection
     {
         return City::query()
-            ->select(['id', 'name', 'country_id', 'status'])
-            ->orderBy('country_id')
+            ->select(['id', 'name_en', 'name_ar', 'state_id', 'status'])
+            ->orderBy('state_id')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(fn (City $city) => [
+                'id' => $city->id,
+                '_id' => (string) $city->id,
+                'name' => ['en' => $city->name_en, 'ar' => $city->name_ar],
+                'stateId' => (string) $city->state_id,
+                'status' => $city->status,
+            ]);
     }
 
     private function placeTypes(): Collection

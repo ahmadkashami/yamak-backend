@@ -4,8 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Dashboard\AuthController;
 use App\Http\Controllers\Api\Dashboard\BranchController;
 use App\Http\Controllers\Api\Dashboard\CompanyController;
+use App\Http\Controllers\Api\Dashboard\CityController;
+use App\Http\Controllers\Api\Dashboard\CountryController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\ServiceController;
+use App\Http\Controllers\Api\Dashboard\StateController;
 use App\Http\Controllers\Api\Dashboard\UserController;
 
 Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
@@ -47,5 +50,12 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('branches', BranchController::class)->except(['destroy']);
         Route::get('services/list-ids', [ServiceController::class, 'listIds'])->name('services.list_ids');
         Route::apiResource('services', ServiceController::class);
+        Route::get('countries/{country}/states', [CountryController::class, 'states'])->name('countries.states');
+        Route::apiResource('countries', CountryController::class);
+        Route::get('states/{state}/cities', [StateController::class, 'cities'])->name('states.cities');
+        Route::post('states/bulk', [StateController::class, 'storeBulk'])->name('states.bulk');
+        Route::apiResource('states', StateController::class)->only(['index', 'show']);
+        Route::post('cities/bulk', [CityController::class, 'storeBulk'])->name('cities.bulk');
+        Route::apiResource('cities', CityController::class)->only(['index', 'show']);
     });
 });

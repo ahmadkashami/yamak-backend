@@ -8,22 +8,23 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Country extends Model
 {
-    use HasFactory,SoftDeletes,Imageable;
-    protected $casts = [
-        'name' => 'array',
-        'description' => 'array',
-        'when_to_visit' => 'array',
-        'status' => 'boolean',
-        'featured' => 'boolean',
-    ];
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
-        'name', 'description','featured', 'cover_image','flag_image','status','when_to_visit'
+        'name_en',
+        'name_ar',
+        'country_code',
+        'currency',
+        'status',
     ];
 
-    public function cities(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function states(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(City::class );
+        return $this->hasMany(State::class);
     }
 
-
+    public function cities(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(City::class, State::class);
+    }
 }

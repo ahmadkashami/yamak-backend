@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Country;
+use App\Models\State;
+use App\Models\City;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
@@ -27,6 +30,7 @@ class BaseDataSeeder extends Seeder
         }
 
         $this->seedDemoAdmin();
+        $this->seedLocations();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
@@ -58,6 +62,41 @@ class BaseDataSeeder extends Seeder
                 'lang' => 'en',
                 'role_id' => $roleId,
                 'email_verified_at' => now(),
+            ]
+        );
+    }
+
+    private function seedLocations(): void
+    {
+        $country = Country::query()->updateOrCreate(
+            ['country_code' => '965'],
+            [
+                'name_en' => 'Kuwait',
+                'name_ar' => 'Kuwait',
+                'currency' => 'KWD',
+                'status' => 'active',
+            ]
+        );
+
+        $state = State::query()->updateOrCreate(
+            [
+                'country_id' => $country->id,
+                'name_en' => 'Kuwait City',
+            ],
+            [
+                'name_ar' => 'Kuwait City',
+                'status' => 'active',
+            ]
+        );
+
+        City::query()->updateOrCreate(
+            [
+                'state_id' => $state->id,
+                'name_en' => 'Kuwait City',
+            ],
+            [
+                'name_ar' => 'Kuwait City',
+                'status' => 'active',
             ]
         );
     }

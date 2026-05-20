@@ -9,31 +9,27 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class City extends Model
 {
-    use HasFactory, SoftDeletes, Imageable;
+    use HasFactory, SoftDeletes;
 
-    protected $casts = [
-        'name' => 'array',
-        'description' => 'array',
-        "featured" => "boolean",
-        "status" => "boolean",
-    ];
-    protected $with = ['country'];
     protected $fillable = [
-        'name', 'description', 'country_id', 'featured', 'cover_image', 'status'
+        'state_id',
+        'name_en',
+        'name_ar',
+        'status',
     ];
 
-    public function country(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function state(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Country::class);
+        return $this->belongsTo(State::class);
     }
 
-    public function Places(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function country(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
     {
-        return $this->hasMany(Place::class);
+        return $this->hasOneThrough(Country::class, State::class, 'id', 'id', 'state_id', 'country_id');
     }
 
     public function scopeActiveCities($query)
     {
-        return $query->where('status', 1);
+        return $query->where('status', 'active');
     }
 }
