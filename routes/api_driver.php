@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Driver\AuthController;
+use App\Http\Controllers\Api\Driver\DriverController;
 
 $driverHealth = function () {
     return response()->json([
@@ -23,10 +24,20 @@ $driverHealth = function () {
 Route::prefix('driver/v1')->name('api.driver.')->group(function () use ($driverHealth) {
     Route::get('/', $driverHealth)->name('root');
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware(['auth:sanctum', 'api.area:driver'])->group(function () {
+        Route::get('drivers/profile', [DriverController::class, 'profile'])->name('drivers.profile');
+        Route::put('drivers/profile', [DriverController::class, 'updateProfile'])->name('drivers.profile.update');
+    });
 });
 
 // Legacy NestJS root kept during migration until all clients use /api/driver/v1.
 Route::prefix('driver-app/v1')->name('api.driver_legacy.')->group(function () use ($driverHealth) {
     Route::get('/', $driverHealth)->name('root');
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware(['auth:sanctum', 'api.area:driver'])->group(function () {
+        Route::get('drivers/profile', [DriverController::class, 'profile'])->name('drivers.profile');
+        Route::put('drivers/profile', [DriverController::class, 'updateProfile'])->name('drivers.profile.update');
+    });
 });
