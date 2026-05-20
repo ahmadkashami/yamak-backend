@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Mobile\AuthController;
 use App\Http\Controllers\Api\Mobile\RequestController;
 use App\Http\Controllers\Api\Mobile\UserCarController;
 use App\Http\Controllers\Api\Mobile\UserController;
+use App\Http\Controllers\Api\Mobile\UserNotificationController;
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('/', function () {
@@ -46,5 +47,6 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::get('user-cars', [UserCarController::class, 'index'])->name('user-cars.index');
         Route::post('user-cars', [UserCarController::class, 'store'])->name('user-cars.store');
         Route::delete('user-cars/{userCar}', [UserCarController::class, 'destroy'])->name('user-cars.destroy');
+        Route::get('user-notifications/mine', [UserNotificationController::class, 'mine'])->name('user-notifications.mine');
     });
 });
