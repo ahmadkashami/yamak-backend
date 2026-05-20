@@ -125,7 +125,9 @@ Token behavior:
 ## High-Risk Findings
 
 - `mobile-rn` has one register call using `/api/mobile/client/v1/register`; Laravel keeps this as a compatibility alias until that legacy screen is removed or migrated.
-- `yamak-dashboard`, `mobile-rn`, and `yamak-drivers` have basic Sanctum login/profile smoke coverage. Broader authenticated route response testing is still required before switching production traffic.
+- `yamak-dashboard`, `mobile-rn`, and `yamak-drivers` have basic Sanctum login/profile smoke coverage.
+- `yamak-drivers` now has driver parity coverage for login success/failure, profile get/update, vehicle owner/location/status/link/unlink, legacy prefix alias, and wrong-area token rejection.
+- Broader dashboard and mobile authenticated route response testing is still required before switching production traffic.
 - `yamak-drivers` uses `api/driver/v1`, while the NestJS baseline also used `api/driver-app/v1`. Laravel currently supports both roots during migration.
 - Client token storage keys differ:
   - dashboard/web: `accessToken`
