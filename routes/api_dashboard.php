@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Dashboard\AdController;
+use App\Http\Controllers\Api\Dashboard\AppSettingController;
 use App\Http\Controllers\Api\Dashboard\AuthController;
 use App\Http\Controllers\Api\Dashboard\AppUserController;
 use App\Http\Controllers\Api\Dashboard\BranchController;
@@ -72,6 +74,10 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('vehicles', VehicleController::class)->only(['index', 'store', 'show', 'update']);
         Route::apiResource('app-users', AppUserController::class)->only(['index', 'show']);
         Route::apiResource('requests', RequestController::class)->only(['index', 'store']);
+        Route::apiResource('adds', AdController::class)->parameters(['adds' => 'ad']);
+        Route::apiResource('app-setting', AppSettingController::class)
+            ->parameters(['app-setting' => 'appSetting'])
+            ->only(['index', 'store', 'show', 'update']);
         Route::get('websites/companies/{company}', [WebsiteController::class, 'byCompany'])->name('websites.companies');
         Route::apiResource('websites', WebsiteController::class)->only(['index', 'store', 'update']);
         Route::get('website-themes/websites/{website}', [WebsiteThemeController::class, 'byWebsite'])->name('website-themes.websites');

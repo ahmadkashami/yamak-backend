@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Mobile\AdController;
+use App\Http\Controllers\Api\Mobile\AppSettingController;
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('/', function () {
@@ -19,4 +21,8 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
             ],
         ]);
     })->name('root');
+
+    Route::get('adds', [AdController::class, 'index'])->name('adds.index');
+    Route::get('adds/{ad}', [AdController::class, 'show'])->name('adds.show');
+    Route::get('app-setting', [AppSettingController::class, 'index'])->name('app-setting.index');
 });
