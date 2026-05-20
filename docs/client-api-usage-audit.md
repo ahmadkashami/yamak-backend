@@ -80,7 +80,7 @@ Token behavior:
 ## mobile-rn
 
 Authentication:
-- `POST /api/mobile/client/v1/register` is currently an absolute-looking path and may bypass the configured `/api/mobile/v1` prefix semantics in Axios.
+- `POST /api/mobile/client/v1/register` is kept as a Laravel compatibility alias because `FormAuthScreen` expects the legacy `{ data, access_token }` response shape.
 - `POST auth/login`
 - `POST auth/sendCode`
 - `POST auth/checkCode`
@@ -124,7 +124,7 @@ Token behavior:
 
 ## High-Risk Findings
 
-- `mobile-rn` has one register call using `/api/mobile/client/v1/register` while its base URL already includes `/api/mobile/v1/`. This must be normalized during mobile auth migration.
+- `mobile-rn` has one register call using `/api/mobile/client/v1/register`; Laravel keeps this as a compatibility alias until that legacy screen is removed or migrated.
 - `yamak-dashboard` still needs route-by-route smoke testing against Laravel responses before switching production traffic.
 - `yamak-drivers` uses `api/driver/v1`, while the NestJS baseline also used `api/driver-app/v1`. Laravel currently supports both roots during migration.
 - Client token storage keys differ:

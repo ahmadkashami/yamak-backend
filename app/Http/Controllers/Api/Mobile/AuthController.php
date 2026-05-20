@@ -114,6 +114,36 @@ class AuthController extends Controller
         ]);
     }
 
+    public function legacyRegister(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+            'password' => ['required', 'string'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'min:7', 'max:255'],
+        ]);
+
+        $email = strtolower($data['email']);
+        $user = AppUser::query()->updateOrCreate(
+            ['email' => $email],
+            [
+                'email' => $email,
+                'password' => $data['password'],
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'is_social_signup' => false,
+                'status' => 'active',
+            ]
+        );
+
+        $token = $user->createToken('mobile_token', ['mobile'])->plainTextToken;
+
+        return response()->json([
+            'data' => $appUsers->appUserResource($user),
+            'access_token' => $token,
+        ]);
+    }
+
     public function login(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
