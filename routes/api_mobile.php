@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Mobile\AdController;
 use App\Http\Controllers\Api\Mobile\AppSettingController;
 use App\Http\Controllers\Api\Mobile\AuthController;
+use App\Http\Controllers\Api\Mobile\UserController;
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('/', function () {
@@ -34,4 +35,10 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::post('auth/send-reset-password', [AuthController::class, 'sendResetPassword'])->name('auth.send_reset_password');
     Route::post('auth/check-reset-password', [AuthController::class, 'checkResetPassword'])->name('auth.check_reset_password');
     Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->name('auth.reset_password');
+
+    Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
+        Route::get('app-users/profile', [UserController::class, 'profile'])->name('app-users.profile');
+        Route::patch('app-users/profile', [UserController::class, 'updateProfile'])->name('app-users.profile.update');
+        Route::delete('app-users/account', [UserController::class, 'deleteAccount'])->name('app-users.account.delete');
+    });
 });
