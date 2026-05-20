@@ -14,6 +14,11 @@ use App\Http\Controllers\Api\Dashboard\ServiceController;
 use App\Http\Controllers\Api\Dashboard\StateController;
 use App\Http\Controllers\Api\Dashboard\UserController;
 use App\Http\Controllers\Api\Dashboard\VehicleController;
+use App\Http\Controllers\Api\Dashboard\WebsiteCarouselController;
+use App\Http\Controllers\Api\Dashboard\WebsiteController;
+use App\Http\Controllers\Api\Dashboard\WebsiteFeatureController;
+use App\Http\Controllers\Api\Dashboard\WebsiteSliderController;
+use App\Http\Controllers\Api\Dashboard\WebsiteThemeController;
 
 Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
     Route::get('/', function () {
@@ -34,6 +39,7 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
     })->name('root');
 
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::get('websites/domains', [WebsiteController::class, 'byDomain'])->name('websites.domains');
 
     Route::middleware(['auth:sanctum', 'api.area:dashboard'])->group(function () {
         Route::get('sys-users/profile', [AuthController::class, 'profile'])->name('sys_users.profile');
@@ -66,5 +72,20 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('vehicles', VehicleController::class)->only(['index', 'store', 'show', 'update']);
         Route::apiResource('app-users', AppUserController::class)->only(['index', 'show']);
         Route::apiResource('requests', RequestController::class)->only(['index', 'store']);
+        Route::get('websites/companies/{company}', [WebsiteController::class, 'byCompany'])->name('websites.companies');
+        Route::apiResource('websites', WebsiteController::class)->only(['index', 'store', 'update']);
+        Route::get('website-themes/websites/{website}', [WebsiteThemeController::class, 'byWebsite'])->name('website-themes.websites');
+        Route::apiResource('website-themes', WebsiteThemeController::class)
+            ->parameters(['website-themes' => 'websiteTheme'])
+            ->except(['show']);
+        Route::apiResource('website-features', WebsiteFeatureController::class)
+            ->parameters(['website-features' => 'websiteFeature'])
+            ->except(['show']);
+        Route::apiResource('website-sliders', WebsiteSliderController::class)
+            ->parameters(['website-sliders' => 'websiteSlider'])
+            ->except(['show']);
+        Route::apiResource('website-carousels', WebsiteCarouselController::class)
+            ->parameters(['website-carousels' => 'websiteCarousel'])
+            ->only(['index', 'store', 'destroy']);
     });
 });
