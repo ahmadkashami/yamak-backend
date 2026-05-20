@@ -19,6 +19,14 @@ php artisan key:generate
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
+Run tests:
+
+```bash
+php artisan test
+```
+
+The PHPUnit setup uses an in-memory SQLite database so migration smoke tests do not require a local MySQL testing database.
+
 ## Migration Notes
 
 - This project replaces the old NestJS backend in `nest-backend`.
