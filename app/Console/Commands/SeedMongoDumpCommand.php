@@ -34,6 +34,8 @@ class SeedMongoDumpCommand extends Command
 
     private array $ids = [];
 
+    private array $summary = [];
+
     public function handle(): int
     {
         $path = realpath(base_path($this->argument('path'))) ?: realpath($this->argument('path'));
@@ -69,6 +71,7 @@ class SeedMongoDumpCommand extends Command
         });
 
         $this->info('Legacy dump import completed.');
+        $this->writeSummary();
 
         return self::SUCCESS;
     }
@@ -115,11 +118,56 @@ class SeedMongoDumpCommand extends Command
         }
 
         $docs = [];
-        foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
-            $docs[] = json_decode($line, true);
+        foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $lineNumber => $line) {
+            $doc = json_decode($line, true);
+
+            if (! is_array($doc)) {
+                $this->warn("Skipping {$collection} line ".($lineNumber + 1).': invalid JSON.');
+                continue;
+            }
+
+            $docs[] = $doc;
         }
 
-        return array_filter($docs);
+        $this->summary[$collection]['read'] = count($docs);
+
+        return $docs;
+    }
+
+    private function imported(string $collection): void
+    {
+        $this->summary[$collection]['imported'] = ($this->summary[$collection]['imported'] ?? 0) + 1;
+    }
+
+    private function skipped(string $collection): void
+    {
+        $this->summary[$collection]['skipped'] = ($this->summary[$collection]['skipped'] ?? 0) + 1;
+    }
+
+    private function writeSummary(): void
+    {
+        $required = ['countries', 'states', 'cities', 'companies', 'services', 'branches', 'appusers', 'drivers', 'vehicles'];
+
+        foreach ($required as $collection) {
+            if (($this->summary[$collection]['imported'] ?? 0) === 0) {
+                $this->warn("Validation warning: {$collection} imported 0 records.");
+            }
+        }
+
+        $rows = collect($this->summary)
+            ->sortKeys()
+            ->map(fn (array $counts, string $collection) => [
+                $collection,
+                $counts['read'] ?? 0,
+                $counts['imported'] ?? 0,
+                $counts['skipped'] ?? 0,
+            ])
+            ->values()
+            ->all();
+
+        if ($rows) {
+            $this->table(['Collection', 'Read', 'Imported', 'Skipped'], $rows);
+        }
     }
 
     private function oid(mixed $value): ?string
@@ -180,6 +228,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('countries', $this->oid($doc['_id'] ?? null), $country->id);
+            $this->imported('countries');
         }
     }
 
@@ -197,6 +246,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('states', $this->oid($doc['_id'] ?? null), $state->id);
+            $this->imported('states');
         }
     }
 
@@ -214,6 +264,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('cities', $this->oid($doc['_id'] ?? null), $city->id);
+            $this->imported('cities');
         }
     }
 
@@ -234,6 +285,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('companies', $this->oid($doc['_id'] ?? null), $company->id);
+            $this->imported('companies');
         }
     }
 
@@ -250,6 +302,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('services', $this->oid($doc['_id'] ?? null), $service->id);
+            $this->imported('services');
         }
     }
 
@@ -276,6 +329,7 @@ class SeedMongoDumpCommand extends Command
             );
             $branch->services()->sync(array_filter(array_map(fn ($id) => $this->id('services', $id), $doc['services'] ?? [])));
             $this->remember('branches', $this->oid($doc['_id'] ?? null), $branch->id);
+            $this->imported('branches');
         }
     }
 
@@ -292,6 +346,7 @@ class SeedMongoDumpCommand extends Command
                     'test' => $doc['test'] ?? null,
                 ]
             );
+            $this->imported('appsettings');
         }
     }
 
@@ -309,6 +364,7 @@ class SeedMongoDumpCommand extends Command
                     'status' => $doc['status'] ?? 'active',
                 ]
             );
+            $this->imported('adds');
         }
     }
 
@@ -339,6 +395,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('appusers', $this->oid($doc['_id'] ?? null), $user->id);
+            $this->imported('appusers');
         }
     }
 
@@ -353,7 +410,7 @@ class SeedMongoDumpCommand extends Command
                     'name' => $doc['name'] ?? 'Driver',
                     'photo' => $doc['photo'] ?? null,
                     'phone_num' => $doc['phoneNum'] ?? null,
-                    'password' => $doc['password'] ?? null,
+                    'password' => $doc['password'] ?? 'legacy-import-password',
                     'driver_license' => $doc['driverLicense'] ?? null,
                     'license_expired_at' => $this->date($doc['licenseExpiredAt'] ?? null),
                     'status' => $doc['status'] ?? 'active',
@@ -361,6 +418,7 @@ class SeedMongoDumpCommand extends Command
                 ]
             );
             $this->remember('drivers', $this->oid($doc['_id'] ?? null), $driver->id);
+            $this->imported('drivers');
         }
     }
 
@@ -388,6 +446,7 @@ class SeedMongoDumpCommand extends Command
             $vehicle->drivers()->sync(array_filter(array_map(fn ($id) => $this->id('drivers', $id), $doc['drivers'] ?? [])));
             $vehicle->services()->sync(array_filter(array_map(fn ($id) => $this->id('services', $id), $doc['services'] ?? [])));
             $this->remember('vehicles', $this->oid($doc['_id'] ?? null), $vehicle->id);
+            $this->imported('vehicles');
         }
     }
 
@@ -397,6 +456,7 @@ class SeedMongoDumpCommand extends Command
             $userId = $this->id('appusers', $doc['userId'] ?? null);
 
             if (! $userId) {
+                $this->skipped('usercars');
                 continue;
             }
 
@@ -412,6 +472,7 @@ class SeedMongoDumpCommand extends Command
                     'status' => $doc['status'] ?? 'active',
                 ]
             );
+            $this->imported('usercars');
         }
     }
 
@@ -428,14 +489,21 @@ class SeedMongoDumpCommand extends Command
                     'code_expire_date' => $this->date($doc['codeExpireDate'] ?? null),
                 ]
             );
+            $this->imported('userotps');
         }
     }
 
     private function importUserNotifications(string $path): void
     {
         foreach ($this->docs($path, 'usernotifications') as $doc) {
-            UserNotification::query()->create([
-                'app_user_id' => $this->id('appusers', $doc['userId'] ?? null),
+            $appUserId = $this->id('appusers', $doc['userId'] ?? null);
+
+            UserNotification::query()->updateOrCreate([
+                'app_user_id' => $appUserId,
+                'title' => $doc['title'] ?? null,
+                'type' => $doc['type'] ?? null,
+                'expired_at' => $this->date($doc['expiredAt'] ?? null),
+            ], [
                 'title' => $doc['title'] ?? null,
                 'body' => $doc['body'] ?? null,
                 'description' => $doc['description'] ?? null,
@@ -443,6 +511,7 @@ class SeedMongoDumpCommand extends Command
                 'is_read' => (bool) ($doc['isRead'] ?? false),
                 'expired_at' => $this->date($doc['expiredAt'] ?? null),
             ]);
+            $this->imported('usernotifications');
         }
     }
 
@@ -454,10 +523,16 @@ class SeedMongoDumpCommand extends Command
             $driver = $driverId ? Driver::query()->find($driverId) : null;
 
             if (! $appUserId || ! $driverId) {
+                $this->skipped('requests');
                 continue;
             }
 
-            $request = ServiceRequest::query()->create([
+            $request = ServiceRequest::query()->updateOrCreate([
+                'app_user_id' => $appUserId,
+                'driver_id' => $driverId,
+                'platform' => $doc['platform'] ?? 'mobile',
+                'status' => $doc['status'] ?? 'active',
+            ], [
                 'platform' => $doc['platform'] ?? 'mobile',
                 'app_user_id' => $appUserId,
                 'driver_id' => $driverId,
@@ -466,6 +541,7 @@ class SeedMongoDumpCommand extends Command
                 'status' => $doc['status'] ?? 'active',
             ]);
             $request->services()->sync(array_filter(array_map(fn ($id) => $this->id('services', $id), $doc['services'] ?? [])));
+            $this->imported('requests');
         }
     }
 
@@ -488,6 +564,7 @@ class SeedMongoDumpCommand extends Command
             );
             $website->services()->sync(array_filter(array_map(fn ($id) => $this->id('services', $id), $doc['services'] ?? [])));
             $this->remember('websites', $this->oid($doc['_id'] ?? null), $website->id);
+            $this->imported('websites');
         }
     }
 
@@ -511,58 +588,75 @@ class SeedMongoDumpCommand extends Command
                     'status' => $doc['status'] ?? 'active',
                 ]
             );
+            $this->imported('websitethemes');
         }
 
         foreach ($this->docs($path, 'websitefeatures') as $doc) {
             $websiteId = $this->id('websites', $doc['websiteId'] ?? null);
 
             if (! $websiteId) {
+                $this->skipped('websitefeatures');
                 continue;
             }
 
-            WebsiteFeature::query()->create([
+            WebsiteFeature::query()->updateOrCreate([
+                'website_id' => $websiteId,
+                'icon' => $doc['icon'] ?? '',
+                'title_en' => $this->text($doc['title'] ?? null, 'en'),
+            ], [
                 'company_id' => $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id'),
                 'website_id' => $websiteId,
-                'icon' => $doc['icon'] ?? null,
+                'icon' => $doc['icon'] ?? '',
                 'title_en' => $this->text($doc['title'] ?? null, 'en'),
                 'title_ar' => $this->text($doc['title'] ?? null, 'ar'),
                 'description_en' => $this->text($doc['description'] ?? null, 'en'),
                 'description_ar' => $this->text($doc['description'] ?? null, 'ar'),
                 'status' => $doc['status'] ?? 'active',
             ]);
+            $this->imported('websitefeatures');
         }
 
         foreach ($this->docs($path, 'websitesliders') as $doc) {
             $websiteId = $this->id('websites', $doc['websiteId'] ?? null);
 
             if (! $websiteId) {
+                $this->skipped('websitesliders');
                 continue;
             }
 
-            WebsiteSlider::query()->create([
+            WebsiteSlider::query()->updateOrCreate([
+                'website_id' => $websiteId,
+                'image_url' => $doc['imageUrl'] ?? '',
+            ], [
                 'company_id' => $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id'),
                 'website_id' => $websiteId,
-                'image_url' => $doc['imageUrl'] ?? null,
+                'image_url' => $doc['imageUrl'] ?? '',
                 'title_en' => $this->text($doc['title'] ?? null, 'en'),
                 'title_ar' => $this->text($doc['title'] ?? null, 'ar'),
                 'sub_title_en' => $this->text($doc['subTitle'] ?? null, 'en'),
                 'sub_title_ar' => $this->text($doc['subTitle'] ?? null, 'ar'),
                 'status' => $doc['status'] ?? 'active',
             ]);
+            $this->imported('websitesliders');
         }
 
         foreach ($this->docs($path, 'websitecarousels') as $doc) {
             $websiteId = $this->id('websites', $doc['websiteId'] ?? null);
 
             if (! $websiteId) {
+                $this->skipped('websitecarousels');
                 continue;
             }
 
-            WebsiteCarousel::query()->create([
+            WebsiteCarousel::query()->updateOrCreate([
+                'website_id' => $websiteId,
+                'image_url' => $doc['imageUrl'] ?? '',
+            ], [
                 'company_id' => $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id'),
                 'website_id' => $websiteId,
-                'image_url' => $doc['imageUrl'] ?? null,
+                'image_url' => $doc['imageUrl'] ?? '',
             ]);
+            $this->imported('websitecarousels');
         }
     }
 }
