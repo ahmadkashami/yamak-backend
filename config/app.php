@@ -59,6 +59,8 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
+    'api_throttle_per_minute' => (int) env('API_THROTTLE_PER_MINUTE', 60),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
