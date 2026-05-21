@@ -75,6 +75,10 @@ class VehicleController extends Controller
             'geoLocation' => [
                 'latitude' => $vehicle->latitude ? (float) $vehicle->latitude : 0,
                 'longitude' => $vehicle->longitude ? (float) $vehicle->longitude : 0,
+                'coordinates' => [
+                    $vehicle->longitude ? (float) $vehicle->longitude : 0,
+                    $vehicle->latitude ? (float) $vehicle->latitude : 0,
+                ],
             ],
         ];
     }

@@ -323,12 +323,16 @@ class MobileParityTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.metaData.totalCount', 1)
-            ->assertJsonPath('data.list.0.id', $vehicle->id);
+            ->assertJsonPath('data.list.0.id', $vehicle->id)
+            ->assertJsonPath('data.list.0.geoLocation.coordinates.0', 47.9774)
+            ->assertJsonPath('data.list.0.geoLocation.coordinates.1', 29.3759);
 
         $this->getJson('/api/mobile/v1/services/'.$service->id.'/vehicles?latitude=29.1&longitude=47.1')
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.0.id', $vehicle->id);
+            ->assertJsonPath('data.0.id', $vehicle->id)
+            ->assertJsonPath('data.0.geoLocation.coordinates.0', 47.9774)
+            ->assertJsonPath('data.0.geoLocation.coordinates.1', 29.3759);
 
         $requestId = $this->postJson('/api/mobile/v1/requests', [
             'driverId' => $driver->id,
