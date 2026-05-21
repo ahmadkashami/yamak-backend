@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Api\Dashboard\RequestController as DashboardRequestController;
 use App\Http\Controllers\Controller;
+use App\Mail\UserRequestOrderMail;
 use App\Models\Driver;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class RequestController extends Controller
 {
@@ -44,6 +46,10 @@ class RequestController extends Controller
         ]);
 
         $serviceRequest->services()->sync($data['services'] ?? []);
+
+        if ($driver->email) {
+            Mail::to($driver->email)->send(new UserRequestOrderMail(now()));
+        }
 
         return response()->success($dashboardRequests->requestResource(
             $serviceRequest->fresh(['appUser', 'driver.branch', 'driver.company', 'services'])

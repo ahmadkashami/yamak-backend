@@ -41,13 +41,20 @@ class AppUserController extends Controller
             'phone' => $user->phone,
             'username' => $user->name,
             'email' => $user->email,
+            'photo' => $user->photo,
             'lastLogin' => optional($user->last_login)->toJSON(),
             'birthDay' => optional($user->birth_day)->toDateString(),
             'gender' => $user->gender,
+            'language' => $user->language,
             'status' => $user->status,
             'fcmToken' => $user->fcm_token,
+            'notificationToken' => $user->notification_token,
             'notificationsEnabled' => $user->notifications_enabled,
             'isEmailVerified' => $user->is_email_verified,
+            'location' => [
+                'latitude' => $user->latitude,
+                'longitude' => $user->longitude,
+            ],
             'createdAt' => optional($user->created_at)->toJSON(),
         ];
     }
