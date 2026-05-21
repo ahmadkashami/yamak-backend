@@ -2,6 +2,9 @@
 
 namespace Tests\PublicApi;
 
+use App\Services\CloudinaryUploadService;
+use Illuminate\Http\UploadedFile;
+use Mockery;
 use Tests\TestCase;
 
 class PublicApiSmokeTest extends TestCase
@@ -38,8 +41,29 @@ class PublicApiSmokeTest extends TestCase
     public function test_public_file_upload_validates_missing_file_without_authentication(): void
     {
         $this->postJson('/api/dashboard/v1/files-upload')
-            ->assertStatus(422)
+            ->assertStatus(400)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('errors.code', 'VALIDATION_ERROR');
+            ->assertJsonPath('message', 'size limit : 1mb , file type : jpg|jpeg|png ');
+    }
+
+    public function test_public_file_upload_returns_cloudinary_payload(): void
+    {
+        $cloudinary = Mockery::mock(CloudinaryUploadService::class);
+        $cloudinary->shouldReceive('upload')
+            ->once()
+            ->andReturn([
+                'secure_url' => 'https://res.cloudinary.com/yamak/image/upload/demo.png',
+                'public_id' => 'dev/images/demo',
+            ]);
+
+        $this->instance(CloudinaryUploadService::class, $cloudinary);
+
+        $this->post('/api/dashboard/v1/files-upload', [
+            'file' => UploadedFile::fake()->image('demo.png')->size(100),
+        ])
+            ->assertOk()
+            ->assertJsonPath('statusCode', 200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.secure_url', 'https://res.cloudinary.com/yamak/image/upload/demo.png');
     }
 }
