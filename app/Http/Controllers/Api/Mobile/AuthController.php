@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Api\Dashboard\AppUserController;
 use App\Http\Controllers\Controller;
+use App\Mail\UserRegistrationCodeMail;
+use App\Mail\UserResetPasswordCodeMail;
 use App\Models\AppUser;
 use App\Models\UserOtp;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -100,13 +103,15 @@ class AuthController extends Controller
             ]
         );
 
-        UserOtp::query()->updateOrCreate(
+        $otp = UserOtp::query()->updateOrCreate(
             ['email' => $email, 'phone' => null],
             [
                 'code' => $this->newCode(),
                 'code_expire_date' => now()->addDays(2),
             ]
         );
+
+        Mail::to($email)->send(new UserRegistrationCodeMail($user->name, $otp->code));
 
         return response()->success([
             'user' => $appUsers->appUserResource($user),
@@ -162,13 +167,15 @@ class AuthController extends Controller
         }
 
         if (! $user->is_email_verified) {
-            UserOtp::query()->updateOrCreate(
+            $otp = UserOtp::query()->updateOrCreate(
                 ['email' => $email, 'phone' => null],
                 [
                     'code' => $this->newCode(),
                     'code_expire_date' => now()->addDays(2),
                 ]
             );
+
+            Mail::to($email)->send(new UserRegistrationCodeMail($user->name, $otp->code));
         }
 
         $user->forceFill(['last_login' => now()])->save();
@@ -292,6 +299,8 @@ class AuthController extends Controller
             'reset_pass_code' => $this->newCode(),
             'reset_pass_expire_date' => now()->addDays(2),
         ]);
+
+        Mail::to($email)->send(new UserResetPasswordCodeMail($user->name, $user->reset_pass_code));
 
         return response()->success('successful mail sent');
     }

@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Mail\UserRegistrationCodeMail;
 use App\Mail\UserRequestOrderMail;
+use App\Mail\UserResetPasswordCodeMail;
 use App\Models\Ad;
 use App\Models\AppSetting;
 use App\Models\AppUser;
@@ -27,6 +29,8 @@ class MobileParityTest extends TestCase
 
     public function test_mobile_auth_otp_signup_login_legacy_register_and_reset_flows(): void
     {
+        Mail::fake();
+
         $sendCode = $this->postJson('/api/mobile/v1/auth/sendCode', [
             'phone' => '965500000003',
         ])
@@ -51,6 +55,8 @@ class MobileParityTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonStructure(['data' => ['user', 'accessToken']]);
+
+        Mail::assertSent(UserRegistrationCodeMail::class, fn (UserRegistrationCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
 
         $code = UserOtp::query()->where('email', 'new.mobile@example.com')->value('code');
         $this->postJson('/api/mobile/v1/auth/verify-email', [
@@ -84,6 +90,8 @@ class MobileParityTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('success', true);
+
+        Mail::assertSent(UserResetPasswordCodeMail::class, fn (UserResetPasswordCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
 
         $resetCode = AppUser::query()->where('email', 'new.mobile@example.com')->value('reset_pass_code');
         $this->postJson('/api/mobile/v1/auth/check-reset-password', [
