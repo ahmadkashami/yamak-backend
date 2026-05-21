@@ -51,4 +51,12 @@ return [
         'api_secret' => env('CLOUDINARY_API_SECRET', env('Cloudinary_SECRET')),
     ],
 
+    'whatsapp' => [
+        'version' => env('WA_VERSION'),
+        'phone_number_id' => env('WA_PHONE_NUMBER_ID'),
+        'access_token' => env('WA_ACCESS_TOKEN'),
+        'auth_template' => env('WA_AUTH_TEMPLATE', 'yamak_auth'),
+        'language' => env('WA_LANGUAGE', 'en'),
+    ],
+
 ];

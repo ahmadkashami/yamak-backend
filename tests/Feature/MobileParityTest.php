@@ -30,6 +30,18 @@ class MobileParityTest extends TestCase
     public function test_mobile_auth_otp_signup_login_legacy_register_and_reset_flows(): void
     {
         Mail::fake();
+        Http::fake([
+            'https://graph.facebook.com/*' => Http::response([
+                'messages' => [
+                    ['id' => 'wamid.test'],
+                ],
+            ]),
+        ]);
+        config([
+            'services.whatsapp.version' => 'v20.0',
+            'services.whatsapp.phone_number_id' => '123456',
+            'services.whatsapp.access_token' => 'fake-token',
+        ]);
 
         $sendCode = $this->postJson('/api/mobile/v1/auth/sendCode', [
             'phone' => '965500000003',
@@ -57,6 +69,10 @@ class MobileParityTest extends TestCase
             ->assertJsonStructure(['data' => ['user', 'accessToken']]);
 
         Mail::assertSent(UserRegistrationCodeMail::class, fn (UserRegistrationCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
+        Http::assertSent(fn ($request) => $request->url() === 'https://graph.facebook.com/v20.0/123456/messages'
+            && $request['to'] === '965500000004'
+            && $request['type'] === 'template'
+            && $request['template']['name'] === 'yamak_auth');
 
         $code = UserOtp::query()->where('email', 'new.mobile@example.com')->value('code');
         $this->postJson('/api/mobile/v1/auth/verify-email', [
@@ -92,8 +108,12 @@ class MobileParityTest extends TestCase
             ->assertJsonPath('success', true);
 
         Mail::assertSent(UserResetPasswordCodeMail::class, fn (UserResetPasswordCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
-
         $resetCode = AppUser::query()->where('email', 'new.mobile@example.com')->value('reset_pass_code');
+        Http::assertSent(fn ($request) => $request->url() === 'https://graph.facebook.com/v20.0/123456/messages'
+            && $request['to'] === '965500000004'
+            && $request['type'] === 'text'
+            && str_contains($request['text']['body'], $resetCode));
+
         $this->postJson('/api/mobile/v1/auth/check-reset-password', [
             'email' => 'new.mobile@example.com',
             'code' => $resetCode,

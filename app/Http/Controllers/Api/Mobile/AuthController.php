@@ -8,6 +8,7 @@ use App\Mail\UserRegistrationCodeMail;
 use App\Mail\UserResetPasswordCodeMail;
 use App\Models\AppUser;
 use App\Models\UserOtp;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -75,7 +76,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function signup(Request $request, AppUserController $appUsers): \Illuminate\Http\JsonResponse
+    public function signup(Request $request, AppUserController $appUsers, WhatsAppService $whatsApp): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
@@ -112,6 +113,7 @@ class AuthController extends Controller
         );
 
         Mail::to($email)->send(new UserRegistrationCodeMail($user->name, $otp->code));
+        $whatsApp->sendAuthMessage($user->phone, $otp->code);
 
         return response()->success([
             'user' => $appUsers->appUserResource($user),
@@ -279,7 +281,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function sendResetPassword(Request $request): \Illuminate\Http\JsonResponse
+    public function sendResetPassword(Request $request, WhatsAppService $whatsApp): \Illuminate\Http\JsonResponse
     {
         $data = $request->validate([
             'email' => ['required', 'email'],
@@ -301,6 +303,10 @@ class AuthController extends Controller
         ]);
 
         Mail::to($email)->send(new UserResetPasswordCodeMail($user->name, $user->reset_pass_code));
+        $whatsApp->sendMessage(
+            $user->phone,
+            "*{$user->reset_pass_code}* is your verification code. For your security, do not share this code  "
+        );
 
         return response()->success('successful mail sent');
     }
