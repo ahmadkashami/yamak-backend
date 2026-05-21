@@ -159,6 +159,58 @@ class MobileParityTest extends TestCase
             ->assertJsonStructure(['data' => ['user', 'accessToken']]);
     }
 
+    public function test_mobile_facebook_and_apple_social_paths_use_fake_provider_response(): void
+    {
+        Http::fake([
+            'https://graph.facebook.com/me*' => Http::response([
+                'id' => 'facebook-user-id',
+                'email' => 'facebook.mobile@example.com',
+                'name' => 'Facebook Mobile User',
+            ]),
+        ]);
+
+        $this->postJson('/api/mobile/v1/auth/signup-social', [
+            'facebookAccessToken' => 'fake-facebook-token',
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.user.email', 'facebook.mobile@example.com')
+            ->assertJsonStructure(['data' => ['user', 'accessToken']]);
+
+        $this->postJson('/api/mobile/v1/auth/login-social', [
+            'facebookAccessToken' => 'fake-facebook-token',
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.user.email', 'facebook.mobile@example.com')
+            ->assertJsonStructure(['data' => ['user', 'accessToken']]);
+
+        $appleToken = $this->unsignedAppleToken('apple.mobile@example.com');
+
+        $this->postJson('/api/mobile/v1/auth/signup-social', [
+            'appleAccessToken' => $appleToken,
+            'appleInfo' => [
+                'fullName' => [
+                    'givenName' => 'Apple',
+                    'familyName' => 'Mobile',
+                ],
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.user.email', 'apple.mobile@example.com')
+            ->assertJsonPath('data.user.name', 'Apple Mobile')
+            ->assertJsonStructure(['data' => ['user', 'accessToken']]);
+
+        $this->postJson('/api/mobile/v1/auth/login-social', [
+            'appleAccessToken' => $appleToken,
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.user.email', 'apple.mobile@example.com')
+            ->assertJsonStructure(['data' => ['user', 'accessToken']]);
+    }
+
     public function test_mobile_profile_user_cars_and_notifications(): void
     {
         $user = AppUser::query()->where('email', 'app.user@example.com')->firstOrFail();
@@ -339,5 +391,19 @@ class MobileParityTest extends TestCase
         $user = AppUser::query()->where('email', 'app.user@example.com')->firstOrFail();
 
         return [$service, $vehicle, $driver, $user];
+    }
+
+    private function unsignedAppleToken(string $email): string
+    {
+        return implode('.', [
+            $this->base64UrlEncode(json_encode(['alg' => 'none', 'typ' => 'JWT'])),
+            $this->base64UrlEncode(json_encode(['email' => $email])),
+            'signature',
+        ]);
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     }
 }

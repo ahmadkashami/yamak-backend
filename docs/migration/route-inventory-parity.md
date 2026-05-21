@@ -61,14 +61,13 @@ Covered by tests:
 
 - OTP send/check.
 - Signup, login, email verification, reset-password, and legacy register.
-- Google social signup/login with fake provider.
+- Google, Facebook, and Apple social signup/login with fake providers.
 - Profile update, notification token/settings, user cars, notifications.
 - Ads, app settings, services, vehicles, empty pagination, service vehicles, and requests.
 - Mail and WhatsApp side effects use local fakes in tests.
 
 Explicit risk acceptance:
 
-- Mobile social provider tests still need Facebook and Apple coverage before full parity signoff.
 - The legacy NestJS `/driver` mobile controller route is documented in the migration plan as an unclear route. Do not cut it over without confirming client usage.
 
 ## Cutover Rule
@@ -84,4 +83,4 @@ No source route should be cut over unless one of these is true:
 - Date: 2026-05-21
 - Command: `php artisan route:list --path=api`
 - Result: Laravel exposes 145 API routes, including compatibility aliases.
-- Open follow-up: complete `Task: Dashboard Parity Test Suite` and extend social provider coverage.
+- Open follow-up: confirm usage of the unclear legacy mobile `/driver` route before cutover.
