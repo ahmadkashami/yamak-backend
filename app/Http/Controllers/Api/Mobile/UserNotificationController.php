@@ -20,7 +20,7 @@ class UserNotificationController extends Controller
                     $query->where('type', 'all')
                         ->orWhere('app_user_id', $user->id);
                 })
-                ->latest('id')
+                ->orderBy('id')
                 ->get()
                 ->map(fn (UserNotification $notification) => $this->notificationResource($notification))
                 ->values()

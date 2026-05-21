@@ -155,6 +155,8 @@ class MobileParityTest extends TestCase
         $this->patchJson('/api/mobile/v1/app-users/profile', [
             'name' => 'Updated Mobile User',
             'language' => 'ar',
+            'notificationToken' => 'expo-token-1',
+            'notificationsEnabled' => true,
             'location' => [
                 'latitude' => 29.3759,
                 'longitude' => 47.9774,
@@ -163,7 +165,9 @@ class MobileParityTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.name', 'Updated Mobile User')
-            ->assertJsonPath('data.language', 'ar');
+            ->assertJsonPath('data.language', 'ar')
+            ->assertJsonPath('data.notificationToken', 'expo-token-1')
+            ->assertJsonPath('data.notificationsEnabled', true);
 
         $carId = $this->postJson('/api/mobile/v1/user-cars', [
             'make' => 'Toyota',
@@ -183,6 +187,8 @@ class MobileParityTest extends TestCase
         $this->getJson('/api/mobile/v1/user-notifications/mine')
             ->assertOk()
             ->assertJsonPath('success', true)
+            ->assertJsonPath('data.0.title', 'User Notice')
+            ->assertJsonPath('data.1.title', 'Global Notice')
             ->assertJsonCount(2, 'data');
 
         $this->deleteJson('/api/mobile/v1/user-cars/'.$carId)
