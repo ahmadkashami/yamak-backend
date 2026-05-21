@@ -20,18 +20,23 @@ Current Laravel route table:
 ## Route Status By Area
 
 ### Dashboard Routes
-Status: migrated with partial parity coverage.
+Status: migrated with critical parity coverage.
 
 Covered by tests:
 
 - API root health payload.
 - Dashboard login/profile smoke path.
 - Public file upload validation and fake Cloudinary success path.
+- Dashboard stats.
+- Company, service, branch, and website content happy paths.
+- Branch-service and website-service relational linking.
+- App-user listing and service request create/list flows.
+- Notification send-to-user and send-to-topic with fake Firebase service.
 
 Explicit risk acceptance:
 
 - The 91 dashboard source routes are not all covered route-by-route yet.
-- Cutover for dashboard should wait for `Task: Dashboard Parity Test Suite`.
+- Low-frequency dashboard routes still need route-by-route expansion before production cutover, but critical happy paths are covered by `DashboardParityTest`.
 - Authorization behavior is documented separately in `docs/dashboard-authorization.md`.
 
 ### Driver Routes
