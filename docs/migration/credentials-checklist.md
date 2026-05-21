@@ -37,3 +37,14 @@ php artisan test
 ```
 
 Then perform the external smoke tests tracked by the Cloudinary, Mail, WhatsApp, Firebase/Expo, and OAuth tasks.
+
+## Local Readiness Snapshot
+
+See `docs/migration/local-credentials-readiness.md` for the latest sanitized local `.env` readiness audit.
+
+As of 2026-05-21:
+
+- Cloudinary is configured locally and has passed a Laravel service upload smoke check.
+- Local mail is configured only for a local/fake-style transport; real SMTP credentials are not configured.
+- WhatsApp, OAuth/social provider, Firebase/Expo, Redis deployment, CORS, and throttle production values are not configured locally.
+- `.env.example` remains the committed key checklist; real secrets must stay in secure deployment storage.
