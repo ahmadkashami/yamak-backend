@@ -78,9 +78,16 @@ No source route should be cut over unless one of these is true:
 - It is covered by a documented smoke test and client usage audit.
 - It has explicit risk acceptance in this checklist or a linked Notion task.
 
+Related cutover controls:
+
+- `docs/migration/client-api-usage-audit.md`
+- `docs/migration/production-deployment-runbook.md`
+- `docs/migration/production-cutover-rollback-plan.md`
+- `docs/migration/final-cutover-readiness.md`
+
 ## Latest Check
 
-- Date: 2026-05-21
+- Date: 2026-05-22
 - Command: `php artisan route:list --path=api`
 - Result: Laravel exposes 145 API routes, including compatibility aliases.
 - Open follow-up: confirm usage of the unclear legacy mobile `/driver` route before cutover.
