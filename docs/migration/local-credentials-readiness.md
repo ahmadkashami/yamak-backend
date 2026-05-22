@@ -45,4 +45,4 @@ This document records the sanitized local `.env` readiness check for staging/pro
 4. Run provider smoke tests for Cloudinary, SMTP, WhatsApp, Firebase/Expo, OAuth, and Redis-backed queues.
 5. Keep output sanitized: never print tokens, private keys, app passwords, or service account JSON.
 
-Use `docs/migration/secure-secrets-handoff.md` for the full staging/production secret handoff checklist.
+Use `docs/migration/secure-secrets-handoff.md` for the full staging/production secret handoff checklist and `docs/migration/external-service-smoke-tests.md` for the provider smoke-test runbook.

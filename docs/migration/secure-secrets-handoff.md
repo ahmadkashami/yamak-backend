@@ -135,4 +135,4 @@ Notes: public ID redacted
 
 ## Current Local Status
 
-See `docs/migration/local-credentials-readiness.md` for the latest sanitized local readiness snapshot. As of 2026-05-22, Cloudinary is configured locally and has passed real upload checks, while SMTP, WhatsApp, OAuth, Firebase/Expo, Redis deployment values, CORS, and throttle production values still require secure staging/production setup.
+See `docs/migration/local-credentials-readiness.md` for the latest sanitized local readiness snapshot and `docs/migration/external-service-smoke-tests.md` for the provider smoke-test runbook. As of 2026-05-22, Cloudinary is configured locally and has passed real upload checks, while SMTP, WhatsApp, OAuth, Firebase/Expo, Redis deployment values, CORS, and throttle production values still require secure staging/production setup.

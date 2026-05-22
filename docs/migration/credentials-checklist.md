@@ -4,7 +4,7 @@
 
 Real secrets must stay out of Git. Use `.env.example` as the required key checklist and store real staging/production values only in the deployment secret manager or server environment.
 
-Use `docs/migration/secure-secrets-handoff.md` as the operator handoff for collecting and verifying real values without exposing them.
+Use `docs/migration/secure-secrets-handoff.md` as the operator handoff for collecting and verifying real values without exposing them. Use `docs/migration/external-service-smoke-tests.md` for the sanitized provider smoke-test steps after those values are installed.
 
 ## Covered Keys
 
@@ -40,10 +40,13 @@ php artisan test
 
 Then perform the external smoke tests tracked by the Cloudinary, Mail, WhatsApp, Firebase/Expo, and OAuth tasks.
 
+Use `docs/migration/external-service-smoke-tests.md` for the exact smoke-test steps and sanitized reporting format.
+
 ## Local Readiness Snapshot
 
 See `docs/migration/local-credentials-readiness.md` for the latest sanitized local `.env` readiness audit.
 See `docs/migration/secure-secrets-handoff.md` for the staging/production handoff checklist.
+See `docs/migration/external-service-smoke-tests.md` for the shared external-service smoke-test runbook.
 
 As of 2026-05-22:
 
