@@ -20,6 +20,7 @@ composer install --no-dev --optimize-autoloader
 php artisan config:clear
 php artisan config:cache
 php artisan route:list --path=api
+php artisan list reverb
 php artisan test
 ```
 
@@ -57,8 +58,9 @@ php artisan config:cache
 7. Run Laravel config/cache commands.
 8. Run database migrations with production approval.
 9. Restart PHP-FPM, queue workers, scheduler workers, and web server services as applicable.
-10. Clear maintenance mode.
-11. Run post-deploy smoke tests.
+10. Restart the Reverb process after code or config changes.
+11. Clear maintenance mode.
+12. Run post-deploy smoke tests.
 
 Suggested commands:
 
@@ -71,6 +73,7 @@ php artisan migrate --force
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+php artisan reverb:restart
 php artisan up
 ```
 
@@ -95,6 +98,7 @@ External service smoke:
 - Firebase notification to an approved staging token or topic.
 - OAuth/social login with approved provider test accounts.
 - Redis/queue processing for one harmless job.
+- Laravel Reverb WebSocket connection from an approved deployed client origin.
 
 Use `docs/migration/external-service-smoke-tests.md` for redaction rules and provider-specific evidence format.
 
@@ -118,6 +122,7 @@ Go only when:
 - Critical Laravel tests passed against the release candidate.
 - Client base URLs point to the production Laravel API host.
 - Provider smoke tests are PASS or explicitly deferred with owner/date.
+- Reverb process manager, allowed origins, public WebSocket endpoint, and restart command are configured.
 - Rollback path has been rehearsed or approved for the exact release.
 
 No-go when:
@@ -126,5 +131,5 @@ No-go when:
 - Database backup restore path is unverified.
 - Dashboard/mobile/driver login fails.
 - Provider failures affect required production flows and have no accepted deferral.
+- Reverb cannot start, restart, or accept connections from approved deployed clients.
 - Client builds still point to legacy split NestJS ports.
-

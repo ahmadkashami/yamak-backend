@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook defines the sanitized staging smoke checks for the external service migration tasks. It covers Cloudinary, mail, WhatsApp Graph API, Firebase/Expo, OAuth/social providers, Redis queues, and deployment API settings without exposing secret values.
+This runbook defines the sanitized staging smoke checks for the external service migration tasks. It covers Cloudinary, mail, WhatsApp Graph API, Firebase/Expo, OAuth/social providers, Redis queues, Laravel Reverb, and deployment API settings without exposing secret values.
 
 Use this after real values are installed through `docs/migration/secure-secrets-handoff.md`.
 
@@ -201,6 +201,46 @@ Pass criteria:
 - One harmless job is processed by the target queue worker.
 - No Redis password, username, or host details are copied into Notion unless approved for operational notes.
 
+## Laravel Reverb Broadcasting
+
+Laravel code/config paths:
+
+- `config/broadcasting.php`
+- `config/reverb.php`
+- `routes/channels.php`
+- `App\Providers\BroadcastServiceProvider`
+
+Required keys:
+
+- `BROADCAST_CONNECTION`
+- `REVERB_APP_ID`
+- `REVERB_APP_KEY`
+- `REVERB_APP_SECRET`
+- `REVERB_HOST`
+- `REVERB_PORT`
+- `REVERB_SCHEME`
+- `REVERB_SERVER_HOST`
+- `REVERB_SERVER_PORT`
+- `REVERB_SERVER_PATH`
+- `REVERB_ALLOWED_ORIGINS`
+
+Smoke steps:
+
+1. Configure Reverb values through secure environment storage.
+2. Restrict `REVERB_ALLOWED_ORIGINS` to the deployed dashboard, web, and approved mobile/webview origins.
+3. Run `php artisan config:cache`.
+4. Start or restart Reverb through the target process manager.
+5. Verify `php artisan reverb:restart` gracefully restarts the managed process.
+6. Open an approved staging client and verify the browser can connect to the public WebSocket endpoint.
+
+Pass criteria:
+
+- `BROADCAST_CONNECTION` resolves to `reverb`.
+- `php artisan list reverb` shows `reverb:start` and `reverb:restart`.
+- The process manager keeps the Reverb server running after restart.
+- The public WebSocket endpoint works only from approved origins.
+- No app key, app secret, host secret, or internal infrastructure detail is copied into Notion unless approved for operational notes.
+
 ## CORS And Throttle
 
 Required keys:
@@ -230,5 +270,5 @@ Pass criteria:
 | Cloudinary Service Migration | Dashboard upload smoke passes in staging with sanitized Cloudinary evidence. |
 | Mail Provider Migration | One approved staging email is delivered through the configured mail provider. |
 | WhatsApp Graph API Migration | One approved staging WhatsApp template message is delivered through the Graph API. |
-| External Services Migration | Cloudinary, mail, WhatsApp, Firebase/Expo decision, OAuth/social, Redis/queue, CORS, and throttle checks are all PASS or explicitly accepted as deferred with owner/date. |
-
+| Replace Pusher Broadcasting with Laravel Reverb | Reverb config cache, managed-process restart, allowed-origin, and WebSocket connection checks pass in staging. |
+| External Services Migration | Cloudinary, mail, WhatsApp, Firebase/Expo decision, OAuth/social, Redis/queue, Reverb, CORS, and throttle checks are all PASS or explicitly accepted as deferred with owner/date. |

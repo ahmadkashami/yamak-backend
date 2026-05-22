@@ -20,6 +20,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
 - Deployment and rollback controls are documented in:
   - `docs/migration/production-deployment-runbook.md`
   - `docs/migration/production-cutover-rollback-plan.md`
+- Laravel Reverb migration controls are documented in `docs/migration/reverb-broadcasting-migration.md`.
 
 ## Open Cutover Gates
 
@@ -34,6 +35,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
 | Firebase/Expo decision | Pending | Firebase service exists; Expo service is not implemented in Laravel. |
 | OAuth/social provider smoke | Pending | Requires approved provider test accounts/tokens. |
 | Redis/queue worker smoke | Pending | Requires target Redis/queue setup. |
+| Reverb WebSocket smoke | Pending | Requires target Reverb credentials, allowed origins, proxy, and process manager. |
 | Production client environment values | Pending | Deployed builds must point to the Laravel production API host. |
 
 ## Go Decision
@@ -53,4 +55,3 @@ Local verification performed for this readiness pass:
 - Client API usage audit found local single-port compatibility for `mobile-rn`, `yamak-dashboard`, `yamak-drivers`, and `yamak-web`.
 
 Target-environment verification is still required before production cutover.
-

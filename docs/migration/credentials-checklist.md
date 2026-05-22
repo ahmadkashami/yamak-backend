@@ -20,6 +20,7 @@ The Laravel `.env.example` documents the migration credential surface for:
 - Firebase: `FIREBASE_CREDENTIALS`, `FIREBASE_PROJECT_ID`
 - Expo: `EXPO_ACCESS_TOKEN`
 - Redis: `REDIS_HOST`, `REDIS_USERNAME`, `REDIS_PASSWORD`, `REDIS_PORT`, `REDIS_DB`, `REDIS_CACHE_DB`
+- Reverb: `BROADCAST_CONNECTION`, `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME`, `REVERB_SERVER_HOST`, `REVERB_SERVER_PORT`, `REVERB_SERVER_PATH`, `REVERB_ALLOWED_ORIGINS`, `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, `VITE_REVERB_SCHEME`
 - Sanctum/CORS/rate limit: `SANCTUM_STATEFUL_DOMAINS`, `CORS_ALLOWED_ORIGINS`, `API_THROTTLE_PER_MINUTE`
 
 ## Current Provider Notes
@@ -27,6 +28,7 @@ The Laravel `.env.example` documents the migration credential surface for:
 - Facebook and Apple mobile social login currently validate client-provided access tokens and user info. The placeholder keys are documented so production setup has a reserved place if server-side provider app credentials are required later.
 - CORS origins and API throttle values are environment-driven so staging and production can tighten them without code changes.
 - Cloudinary config still supports legacy NestJS aliases during migration.
+- Reverb replaces Pusher-specific broadcasting keys for the Laravel migration target. See `docs/migration/reverb-broadcasting-migration.md` for runtime and proxy notes.
 
 ## Verification
 
@@ -51,6 +53,6 @@ See `docs/migration/external-service-smoke-tests.md` for the shared external-ser
 As of 2026-05-22:
 
 - Cloudinary is configured locally and has passed a Laravel service upload smoke check.
-- Local mail is configured only for a local/fake-style transport; real SMTP credentials are not configured.
-- WhatsApp, OAuth/social provider, Firebase/Expo, Redis deployment, CORS, and throttle production values are not configured locally.
+- SMTP is reported working locally; staging/production mail delivery still needs sanitized smoke evidence after target values are installed.
+- WhatsApp, OAuth/social provider, Firebase/Expo, Redis deployment, Reverb production host/origins/process manager, CORS, and throttle production values are not configured locally.
 - `.env.example` remains the committed key checklist; real secrets must stay in secure deployment storage.
