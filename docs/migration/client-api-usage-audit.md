@@ -41,6 +41,7 @@ Evidence:
 Known compatibility notes:
 
 - Dashboard upload still uses multipart key `file`, matching Laravel upload parity.
+- Dashboard sys users, roles, locations, companies, branches, services, drivers, vehicles, requests, notifications, upload, and website content routes now have expanded Laravel parity coverage.
 - Production client builds must set `VITE_BASE_URL` to the production Laravel dashboard API root.
 
 ## yamak-drivers
@@ -72,6 +73,7 @@ Evidence:
 Known compatibility notes:
 
 - Production web builds must set `VITE_BASE_URL` to the production Laravel API host.
+- The `websites/domains` aggregate payload is covered by dashboard parity tests with services, features, sliders, carousel, and theme content.
 - If public website endpoints are later split from dashboard auth scope, update this audit and the web client in the same implementation step.
 
 ## Cutover Checks

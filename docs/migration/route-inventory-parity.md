@@ -7,7 +7,7 @@ Verified source totals:
 
 | Area | Controllers | Source routes | Laravel status | Test status | Client status |
 | --- | ---: | ---: | --- | --- | --- |
-| Dashboard | 23 | 91 | Migrated as Laravel dashboard routes | Critical smoke coverage; full route-by-route coverage pending dashboard parity suite | `yamak-dashboard` base URL audit exists |
+| Dashboard | 23 | 91 | Migrated as Laravel dashboard routes | Expanded critical coverage for auth, stats, sys users, roles, companies, branches, locations, website content, app users, requests, notifications, and upload | `yamak-dashboard` base URL audit exists |
 | Driver | 4 | 9 | Migrated under `api/driver/v1` plus temporary `api/driver-app/v1` alias | Driver parity suite passes | `yamak-drivers` uses Laravel `api/driver/v1`; existing dirty client changes were not touched |
 | Mobile | 11 | 33 | Migrated under `api/mobile/v1` plus legacy register alias | Mobile parity suite passes for critical paths | `mobile-rn` usage audit exists; existing dirty client changes were not touched |
 | Total | 38 | 133 | Tracked | Tracked by risk level | Tracked by client area |
@@ -29,14 +29,18 @@ Covered by tests:
 - Public file upload validation and fake Cloudinary success path.
 - Dashboard stats.
 - Company, service, branch, and website content happy paths.
+- Sys-user and role create/list/update paths.
+- Country, state, and city location resource paths.
 - Branch-service and website-service relational linking.
+- Company branch, driver, and vehicle related-list paths.
+- Website feature, slider, carousel, and theme content paths.
 - App-user listing and service request create/list flows.
 - Notification send-to-user and send-to-topic with fake Firebase service.
 
 Explicit risk acceptance:
 
-- The 91 dashboard source routes are not all covered route-by-route yet.
-- Low-frequency dashboard routes still need route-by-route expansion before production cutover, but critical happy paths are covered by `DashboardParityTest`.
+- The 91 dashboard source routes are not all covered route-by-route yet, but the route families used by the active dashboard and web clients have expanded parity coverage.
+- Low-frequency dashboard routes still benefit from more route-by-route expansion before production cutover, but critical happy paths are covered by `DashboardParityTest`.
 - Authorization behavior is documented separately in `docs/dashboard-authorization.md`.
 
 ### Driver Routes
