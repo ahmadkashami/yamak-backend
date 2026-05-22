@@ -4,6 +4,8 @@
 
 Real secrets must stay out of Git. Use `.env.example` as the required key checklist and store real staging/production values only in the deployment secret manager or server environment.
 
+Use `docs/migration/secure-secrets-handoff.md` as the operator handoff for collecting and verifying real values without exposing them.
+
 ## Covered Keys
 
 The Laravel `.env.example` documents the migration credential surface for:
@@ -41,8 +43,9 @@ Then perform the external smoke tests tracked by the Cloudinary, Mail, WhatsApp,
 ## Local Readiness Snapshot
 
 See `docs/migration/local-credentials-readiness.md` for the latest sanitized local `.env` readiness audit.
+See `docs/migration/secure-secrets-handoff.md` for the staging/production handoff checklist.
 
-As of 2026-05-21:
+As of 2026-05-22:
 
 - Cloudinary is configured locally and has passed a Laravel service upload smoke check.
 - Local mail is configured only for a local/fake-style transport; real SMTP credentials are not configured.

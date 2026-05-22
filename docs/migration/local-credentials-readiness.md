@@ -40,6 +40,9 @@ This document records the sanitized local `.env` readiness check for staging/pro
 ## Next Staging Steps
 
 1. Store real values in the deployment secret manager or server environment.
-2. Run `php artisan config:clear` and `php artisan config:cache` on the target environment.
-3. Run provider smoke tests for Cloudinary, SMTP, WhatsApp, Firebase/Expo, OAuth, and Redis-backed queues.
-4. Keep output sanitized: never print tokens, private keys, app passwords, or service account JSON.
+2. Quote or escape any `.env` values containing whitespace before running Laravel config commands.
+3. Run `php artisan config:clear` and `php artisan config:cache` on the target environment.
+4. Run provider smoke tests for Cloudinary, SMTP, WhatsApp, Firebase/Expo, OAuth, and Redis-backed queues.
+5. Keep output sanitized: never print tokens, private keys, app passwords, or service account JSON.
+
+Use `docs/migration/secure-secrets-handoff.md` for the full staging/production secret handoff checklist.
