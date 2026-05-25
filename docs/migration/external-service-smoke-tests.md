@@ -67,7 +67,10 @@ Pass criteria:
 
 Known local status:
 
-- Cloudinary is configured locally and has passed real upload checks.
+- Cloudinary is configured locally with the same production-equivalent values used for testing.
+- `api.cloudinary.com:443` is reachable from this machine.
+- Fake upload parity coverage passes through `PublicApiSmokeTest`.
+- A previous Laravel service upload smoke passed, but the latest live service upload attempt timed out before receipt even after adding a bounded service timeout; keep `CLOUDINARY_TIMEOUT` configured and record the next successful bounded upload receipt before marking the target upload gate PASS.
 - Staging/production should still run this smoke check after target secrets are installed.
 
 ## Mail

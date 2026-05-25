@@ -49,6 +49,7 @@ return [
         'cloud_name' => env('CLOUDINARY_CLOUD_NAME', env('Cloudinary_Cn')),
         'api_key' => env('CLOUDINARY_API_KEY', env('Cloudinary_API_KEY')),
         'api_secret' => env('CLOUDINARY_API_SECRET', env('Cloudinary_SECRET')),
+        'timeout' => env('CLOUDINARY_TIMEOUT', 30),
     ],
 
     'whatsapp' => [

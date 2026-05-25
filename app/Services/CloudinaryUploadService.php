@@ -16,6 +16,7 @@ class CloudinaryUploadService
         $cloudName = config('services.cloudinary.cloud_name');
         $apiKey = config('services.cloudinary.api_key');
         $apiSecret = config('services.cloudinary.api_secret');
+        $timeout = config('services.cloudinary.timeout', 30);
 
         if (! $cloudName || ! $apiKey || ! $apiSecret) {
             throw new RuntimeException('Cloudinary credentials are not configured.');
@@ -25,6 +26,8 @@ class CloudinaryUploadService
         $signature = sha1("folder={$folder}&timestamp={$timestamp}{$apiSecret}");
 
         $response = $this->client->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
+            'connect_timeout' => $timeout,
+            'timeout' => $timeout,
             'multipart' => [
                 [
                     'name' => 'file',

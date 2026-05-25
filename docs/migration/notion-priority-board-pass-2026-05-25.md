@@ -37,7 +37,7 @@ This pass reviewed the next 15 priority Notion board items using current page pr
 
 - Secure staging/production credentials and target `.env` installation.
 - Target `php artisan config:cache` after real values are installed.
-- Cloudinary staging HTTP upload smoke.
+- Cloudinary staging HTTP upload smoke with bounded upload completion and sanitized receipt evidence; local config is production-equivalent for testing, but the latest live service upload attempt timed out despite configured values and reachable API TCP connection.
 - Mail staging delivery smoke with bounded send completion and approved inbox receipt evidence; the latest CLI delivery attempt timed out despite configured SMTP values and reachable SMTP TCP connection.
 - WhatsApp staging template smoke.
 - Firebase/Expo staging push smoke.
