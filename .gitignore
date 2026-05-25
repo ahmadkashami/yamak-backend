@@ -21,6 +21,11 @@ yarn.lock
 /.vscode
 *.sqlite*
 *.env
+firebase-*.json
+*firebase*credentials*.json
+*service-account*.json
+google-services.json
+GoogleService-Info.plist
 .replit
 /storage/app/*
 /storage/framework/*

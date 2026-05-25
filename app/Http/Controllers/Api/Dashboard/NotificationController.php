@@ -14,8 +14,7 @@ class NotificationController extends Controller
     public function __construct(
         private readonly FirebaseNotificationService $firebase,
         private readonly ExpoNotificationService $expo,
-    )
-    {
+    ) {
     }
 
     public function sendToUser(Request $request): \Illuminate\Http\JsonResponse

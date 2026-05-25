@@ -16,6 +16,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
 - Route inventory is documented in `docs/migration/route-inventory-parity.md`.
 - Secure credential handoff is documented in `docs/migration/secure-secrets-handoff.md`.
 - External-service smoke steps are documented in `docs/migration/external-service-smoke-tests.md`.
+- Firebase/Expo credential handling is env-driven with no tracked Firebase private key file in the Laravel repository.
 - Client API usage is documented in `docs/migration/client-api-usage-audit.md`.
 - Deployment and rollback controls are documented in:
   - `docs/migration/production-deployment-runbook.md`

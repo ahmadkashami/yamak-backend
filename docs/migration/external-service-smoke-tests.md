@@ -138,7 +138,7 @@ Required keys:
 Smoke steps:
 
 1. Install a staging Firebase service account JSON outside Git.
-2. Set `FIREBASE_CREDENTIALS` to the server-local path for that JSON file.
+2. Set `FIREBASE_CREDENTIALS` to the server-local path for that JSON file. Do not place the JSON file under the application repository, and do not copy its contents into Notion, logs, or committed files.
 3. Use an approved staging FCM token or topic.
 4. Trigger a dashboard notification send through the existing notification endpoint or a controlled staging session.
 5. Verify Firebase returns a message name and the test device/topic receives the notification.
@@ -149,6 +149,7 @@ Pass criteria:
 - Laravel can create a Firebase OAuth access token.
 - Firebase accepts the message send request.
 - The approved test device or topic receives the notification.
+- Local negative tests prove missing or invalid Firebase credential files fail before sending provider requests.
 
 ## Expo Push Notifications
 

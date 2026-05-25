@@ -29,6 +29,7 @@ The Laravel `.env.example` documents the migration credential surface for:
 - CORS origins and API throttle values are environment-driven so staging and production can tighten them without code changes.
 - Cloudinary config still supports legacy NestJS aliases during migration.
 - Reverb replaces Pusher-specific broadcasting keys for the Laravel migration target. See `docs/migration/reverb-broadcasting-migration.md` for runtime and proxy notes.
+- Firebase uses `FIREBASE_CREDENTIALS` as a server-local service account JSON path. Keep that JSON outside the repository or in secure deployment storage mounted at runtime; common Firebase credential filenames are ignored by Git as an extra local safety guard.
 - Expo dashboard notification fallback uses `EXPO_ACCESS_TOKEN` when an app user has an Expo `notificationToken` but no `fcmToken`.
 
 ## Verification
