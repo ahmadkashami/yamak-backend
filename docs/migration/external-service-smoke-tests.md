@@ -87,6 +87,13 @@ Smoke steps:
 4. Verify the inbox receives the message with the expected subject/body shape.
 5. Redact recipient details if the staging inbox address is not meant for shared notes.
 
+Local status as of 2026-05-25:
+
+- Laravel `config:cache` passes with SMTP values installed.
+- Required SMTP config values are present without printing secrets.
+- The configured SMTP host/port is reachable from this machine.
+- A CLI delivery smoke attempt did not return within a 45-second command window even after Laravel read `MAIL_TIMEOUT=30`; keep the timeout configured and record the next successful inbox receipt before marking the mail delivery gate PASS.
+
 Pass criteria:
 
 - `php artisan config:cache` passes after mail values are installed.

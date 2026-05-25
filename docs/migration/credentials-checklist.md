@@ -13,7 +13,7 @@ The Laravel `.env.example` documents the migration credential surface for:
 - MySQL: `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
 - Cloudinary: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - Legacy Cloudinary aliases: `Cloudinary_Cn`, `Cloudinary_API_KEY`, `Cloudinary_SECRET`
-- SMTP: `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_AUTH_USER`, `MAIL_AUTH_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
+- SMTP: `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_AUTH_USER`, `MAIL_AUTH_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_TIMEOUT`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`
 - WhatsApp Graph API: `WA_VERSION`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN`, `WA_AUTH_TEMPLATE`, `WA_LANGUAGE`
 - Google auth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - Facebook/Apple placeholders: `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`, `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`
@@ -55,6 +55,6 @@ See `docs/migration/external-service-smoke-tests.md` for the shared external-ser
 As of 2026-05-22:
 
 - Cloudinary is configured locally and has passed a Laravel service upload smoke check.
-- SMTP is reported working locally; staging/production mail delivery still needs sanitized smoke evidence after target values are installed.
+- SMTP is configured locally, Laravel config cache passes, and the configured SMTP host/port is reachable from this machine. A bounded CLI delivery attempt still timed out, so approved inbox receipt evidence is required before closing the target mail smoke gate.
 - WhatsApp, OAuth/social provider, Firebase/Expo target tokens, Redis deployment, Reverb production host/origins/process manager, CORS, and throttle production values are not configured locally.
 - `.env.example` remains the committed key checklist; real secrets must stay in secure deployment storage.

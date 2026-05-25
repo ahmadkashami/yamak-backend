@@ -32,7 +32,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
 | Laravel config cache on target | Pending | Run after target secrets are installed. |
 | Database backup/restore rehearsal | Pending | Required before production migration window. |
 | Cloudinary staging upload smoke | Pending | Local real upload passed; target environment smoke still required. |
-| Mail staging delivery smoke | Pending | Requires real approved SMTP/provider credentials. |
+| Mail staging delivery smoke | Pending | SMTP config is installed locally and TCP connectivity is reachable; bounded CLI delivery still timed out and still requires approved inbox receipt evidence. |
 | WhatsApp staging template smoke | Pending | Requires approved Graph API credentials and test number. |
 | Firebase/Expo smoke | Pending | Firebase and Expo services exist; target credentials and approved test tokens are still required for staging smoke. |
 | OAuth/social provider smoke | Pending | Requires approved provider test accounts/tokens. |
