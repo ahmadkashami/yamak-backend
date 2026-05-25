@@ -22,6 +22,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
   - `docs/migration/production-deployment-runbook.md`
   - `docs/migration/production-cutover-rollback-plan.md`
 - Laravel Reverb migration controls are documented in `docs/migration/reverb-broadcasting-migration.md`.
+- The 2026-05-25 priority board pass is documented in `docs/migration/notion-priority-board-pass-2026-05-25.md`.
 
 ## Open Cutover Gates
 
