@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppUser;
+use App\Services\ExpoNotificationService;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
 use RuntimeException;
 
 class NotificationController extends Controller
 {
-    public function __construct(private readonly FirebaseNotificationService $firebase)
+    public function __construct(
+        private readonly FirebaseNotificationService $firebase,
+        private readonly ExpoNotificationService $expo,
+    )
     {
     }
 
@@ -29,12 +33,16 @@ class NotificationController extends Controller
             return response()->error('user not found', 400);
         }
 
-        if (! $user->fcm_token) {
+        if (! $user->fcm_token && ! $user->notification_token) {
             return response()->error('no fcmToken found in this user', 400);
         }
 
         try {
-            return response()->success($this->firebase->sendToToken($user->fcm_token, $data['notification']));
+            if ($user->fcm_token) {
+                return response()->success($this->firebase->sendToToken($user->fcm_token, $data['notification']));
+            }
+
+            return response()->success($this->expo->sendToToken($user->notification_token, $data['notification']));
         } catch (RuntimeException $exception) {
             return response()->error($exception->getMessage(), 500);
         }

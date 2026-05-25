@@ -9,6 +9,7 @@ use App\Models\Driver;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\ExpoNotificationService;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -130,6 +131,9 @@ class DashboardParityTest extends TestCase
             ->once()
             ->andReturn(['name' => 'projects/test/messages/2']);
         $this->instance(FirebaseNotificationService::class, $firebase);
+        $expo = Mockery::mock(ExpoNotificationService::class);
+        $expo->shouldNotReceive('sendToToken');
+        $this->instance(ExpoNotificationService::class, $expo);
 
         [$service, $driver, $user] = $this->createOperationalFixture();
 
@@ -180,6 +184,44 @@ class DashboardParityTest extends TestCase
             ->assertStatus(400)
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'size limit : 1mb , file type : jpg|jpeg|png ');
+    }
+
+    public function test_dashboard_notifications_can_fall_back_to_expo_token(): void
+    {
+        $this->actingAsDashboardAdmin();
+
+        $firebase = Mockery::mock(FirebaseNotificationService::class);
+        $firebase->shouldNotReceive('sendToToken');
+        $firebase->shouldNotReceive('sendToTopic');
+        $this->instance(FirebaseNotificationService::class, $firebase);
+
+        $expo = Mockery::mock(ExpoNotificationService::class);
+        $expo->shouldReceive('sendToToken')
+            ->once()
+            ->with('ExpoPushToken[test-token]', [
+                'title' => 'Expo',
+                'body' => 'Body',
+            ])
+            ->andReturn(['data' => ['status' => 'ok', 'id' => 'expo-ticket-1']]);
+        $this->instance(ExpoNotificationService::class, $expo);
+
+        $user = AppUser::query()->where('email', 'app.user@example.com')->firstOrFail();
+        $user->update([
+            'fcm_token' => null,
+            'notification_token' => 'ExpoPushToken[test-token]',
+        ]);
+
+        $this->postJson('/api/dashboard/v1/notifications/users', [
+            'userId' => $user->id,
+            'notification' => [
+                'title' => 'Expo',
+                'body' => 'Body',
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.data.status', 'ok')
+            ->assertJsonPath('data.data.id', 'expo-ticket-1');
     }
 
     public function test_dashboard_sys_users_roles_and_locations(): void

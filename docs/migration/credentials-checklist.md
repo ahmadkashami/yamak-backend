@@ -29,6 +29,7 @@ The Laravel `.env.example` documents the migration credential surface for:
 - CORS origins and API throttle values are environment-driven so staging and production can tighten them without code changes.
 - Cloudinary config still supports legacy NestJS aliases during migration.
 - Reverb replaces Pusher-specific broadcasting keys for the Laravel migration target. See `docs/migration/reverb-broadcasting-migration.md` for runtime and proxy notes.
+- Expo dashboard notification fallback uses `EXPO_ACCESS_TOKEN` when an app user has an Expo `notificationToken` but no `fcmToken`.
 
 ## Verification
 
@@ -54,5 +55,5 @@ As of 2026-05-22:
 
 - Cloudinary is configured locally and has passed a Laravel service upload smoke check.
 - SMTP is reported working locally; staging/production mail delivery still needs sanitized smoke evidence after target values are installed.
-- WhatsApp, OAuth/social provider, Firebase/Expo, Redis deployment, Reverb production host/origins/process manager, CORS, and throttle production values are not configured locally.
+- WhatsApp, OAuth/social provider, Firebase/Expo target tokens, Redis deployment, Reverb production host/origins/process manager, CORS, and throttle production values are not configured locally.
 - `.env.example` remains the committed key checklist; real secrets must stay in secure deployment storage.

@@ -150,11 +150,37 @@ Pass criteria:
 - Firebase accepts the message send request.
 - The approved test device or topic receives the notification.
 
-## Expo Gap
+## Expo Push Notifications
 
-`EXPO_ACCESS_TOKEN` is part of the credential checklist because the legacy migration plan lists Expo push credentials. As of this review, no Laravel `ExpoPushNotificationService` exists under `app/Services`.
+Laravel code path:
 
-Do not mark Expo delivery as passed only because `EXPO_ACCESS_TOKEN` exists. If Expo push is still required for production cutover, port or add the Laravel Expo delivery path first, then run a separate staging Expo smoke test.
+- `App\Services\ExpoNotificationService::sendToToken`
+- `App\Services\ExpoNotificationService::sendToTokens`
+- `App\Http\Controllers\Api\Dashboard\NotificationController::sendToUser`
+
+Required key:
+
+- `EXPO_ACCESS_TOKEN`
+
+Behavior:
+
+- Dashboard user notification sends still prefer `fcmToken` through Firebase when available.
+- If an app user has no `fcmToken` but does have a valid Expo `notificationToken`, Laravel sends through the Expo Push API.
+- Invalid Expo tokens fail before a provider call is made.
+
+Smoke steps:
+
+1. Configure `EXPO_ACCESS_TOKEN` through secure environment storage if the target Expo project requires it.
+2. Use one approved staging Expo push token only.
+3. Trigger `POST /api/dashboard/v1/notifications/users` for an app user whose `notificationToken` is set and `fcmToken` is empty.
+4. Verify Expo returns an accepted push ticket.
+5. Redact the Expo token, ticket ID if needed, access token, and any device/user identifiers.
+
+Pass criteria:
+
+- Laravel validates the Expo token shape before sending.
+- Expo accepts the push request and returns a ticket response.
+- No Expo access token or device token is printed.
 
 ## OAuth And Social Providers
 

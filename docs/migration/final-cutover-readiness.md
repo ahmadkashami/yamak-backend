@@ -32,7 +32,7 @@ Reason: Laravel local parity and client single-port compatibility are documented
 | Cloudinary staging upload smoke | Pending | Local real upload passed; target environment smoke still required. |
 | Mail staging delivery smoke | Pending | Requires real approved SMTP/provider credentials. |
 | WhatsApp staging template smoke | Pending | Requires approved Graph API credentials and test number. |
-| Firebase/Expo decision | Pending | Firebase service exists; Expo service is not implemented in Laravel. |
+| Firebase/Expo smoke | Pending | Firebase and Expo services exist; target credentials and approved test tokens are still required for staging smoke. |
 | OAuth/social provider smoke | Pending | Requires approved provider test accounts/tokens. |
 | Redis/queue worker smoke | Pending | Requires target Redis/queue setup. |
 | Reverb WebSocket smoke | Pending | Requires target Reverb credentials, allowed origins, proxy, and process manager. |
