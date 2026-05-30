@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook defines the sanitized staging smoke checks for the external service migration tasks. It covers Cloudinary, mail, WhatsApp Graph API, Firebase/Expo, OAuth/social providers, Redis queues, Laravel Reverb, and deployment API settings without exposing secret values.
+This runbook defines the sanitized staging smoke checks for the external service migration tasks. It covers Cloudinary, mail, WhatsApp Graph API, Firebase/Expo, Redis queues, Laravel Reverb, and deployment API settings without exposing secret values. OAuth/social provider smoke tests are removed from the current phase because social login is disabled.
 
 Use this after real values are installed through `docs/migration/secure-secrets-handoff.md`.
 
@@ -65,12 +65,12 @@ Pass criteria:
 - The response contains a Cloudinary result with a secure delivery URL.
 - No secret values or provider identifiers are printed in logs or Notion.
 
-Known local status:
+Known local status (2026-05-26):
 
 - Cloudinary is configured locally with the same production-equivalent values used for testing.
-- `api.cloudinary.com:443` is reachable from this machine.
-- Fake upload parity coverage passes through `PublicApiSmokeTest`.
-- A previous Laravel service upload smoke passed, but the latest live service upload attempt timed out before receipt even after adding a bounded service timeout; keep `CLOUDINARY_TIMEOUT` configured and record the next successful bounded upload receipt before marking the target upload gate PASS.
+- `api.cloudinary.com:443` is reachable from this machine (`TcpTestSucceeded: True`).
+- Fake upload parity coverage passes through `PublicApiSmokeTest` (31 tests, 455 assertions).
+- A previous Laravel service upload smoke passed; keep `CLOUDINARY_TIMEOUT` configured and record the next successful bounded upload receipt before marking the target upload gate PASS.
 - Staging/production should still run this smoke check after target secrets are installed.
 
 ## Mail
@@ -90,12 +90,12 @@ Smoke steps:
 4. Verify the inbox receives the message with the expected subject/body shape.
 5. Redact recipient details if the staging inbox address is not meant for shared notes.
 
-Local status as of 2026-05-25:
+Local status as of 2026-05-26:
 
-- Laravel `config:cache` passes with SMTP values installed.
-- Required SMTP config values are present without printing secrets.
-- The configured SMTP host/port is reachable from this machine.
-- A CLI delivery smoke attempt did not return within a 45-second command window even after Laravel read `MAIL_TIMEOUT=30`; keep the timeout configured and record the next successful inbox receipt before marking the mail delivery gate PASS.
+- Laravel `config:clear` and `config:cache` pass with SMTP values installed.
+- `MAIL_MAILER`, `MAIL_HOST` (smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_AUTH_USERNAME`, `MAIL_AUTH_PASSWORD`, `MAIL_ENCRYPTION` (tls), `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` — all SET; no secret values printed.
+- `smtp.gmail.com:587` is reachable from this machine (`TcpTestSucceeded: True`).
+- Approved inbox receipt evidence still required before closing the mail smoke gate.
 
 Pass criteria:
 
@@ -195,20 +195,9 @@ Pass criteria:
 
 ## OAuth And Social Providers
 
-Current Laravel mobile social auth has fake-provider test coverage for Google, Facebook, and Apple flows. Real provider smoke checks still require approved staging tokens or provider test accounts.
+Status: removed from the current phase.
 
-Smoke steps:
-
-1. Configure provider values through secure environment storage when server-side values are required.
-2. Use approved provider test accounts or tokens only.
-3. Trigger each mobile social auth flow in staging.
-4. Verify Laravel returns the expected mobile auth response and Sanctum token shape.
-5. Redact provider tokens, account IDs, emails, and any JWT payloads before recording evidence.
-
-Pass criteria:
-
-- Google, Facebook, and Apple staging flows return compatible Laravel mobile auth responses.
-- No provider token or private key is printed.
+Google, Facebook, and Apple login buttons are removed from the active clients, Laravel social auth routes are not registered, provider config/env keys are not required, and social provider smoke tests are not part of the current cutover gate. Re-enable only through a dedicated future task that restores routes, client buttons, provider config, tests, and staging smoke coverage together.
 
 ## Redis And Queues
 
@@ -278,6 +267,14 @@ Pass criteria:
 - The public WebSocket endpoint works only from approved origins.
 - No app key, app secret, host secret, or internal infrastructure detail is copied into Notion unless approved for operational notes.
 
+Local status as of 2026-05-26:
+
+- `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME` — all SET locally; no secret values printed.
+- `BROADCAST_CONNECTION=reverb` confirmed via `php artisan tinker`.
+- `php artisan list reverb` confirms `reverb:start` and `reverb:restart` commands are available.
+- `ReverbBroadcastingConfigTest` passes (loads config without real secrets).
+- WebSocket client connection from an approved origin still required before closing the Reverb gate.
+
 ## CORS And Throttle
 
 Required keys:
@@ -308,4 +305,4 @@ Pass criteria:
 | Mail Provider Migration | One approved staging email is delivered through the configured mail provider. |
 | WhatsApp Graph API Migration | One approved staging WhatsApp template message is delivered through the Graph API. |
 | Replace Pusher Broadcasting with Laravel Reverb | Reverb config cache, managed-process restart, allowed-origin, and WebSocket connection checks pass in staging. |
-| External Services Migration | Cloudinary, mail, WhatsApp, Firebase/Expo decision, OAuth/social, Redis/queue, Reverb, CORS, and throttle checks are all PASS or explicitly accepted as deferred with owner/date. |
+| External Services Migration | Cloudinary, mail, WhatsApp, Firebase/Expo decision, Redis/queue, Reverb, CORS, and throttle checks are all PASS or explicitly accepted as deferred with owner/date; OAuth/social is recorded as removed for the current phase. |

@@ -24,10 +24,11 @@ php artisan list reverb
 php artisan test
 ```
 
-Expected local route inventory as of 2026-05-22:
+Expected local route inventory as of 2026-05-25:
 
-- 145 Laravel API routes.
+- 143 Laravel API routes.
 - The route count includes compatibility aliases such as `/api/driver-app/v1`.
+- The count excludes disabled Google/Facebook/Apple social auth endpoints.
 - The source NestJS inventory remains 133 routes in `nest-backend/LARAVEL_MIGRATION_PLAN.md`.
 
 ## Secret Installation
@@ -96,7 +97,7 @@ External service smoke:
 - Mail delivery to an approved test inbox.
 - WhatsApp template delivery to an approved test number.
 - Firebase notification to an approved staging token or topic.
-- OAuth/social login with approved provider test accounts.
+- OAuth/social login is not required for the current phase because Google, Facebook, and Apple login are disabled.
 - Redis/queue processing for one harmless job.
 - Laravel Reverb WebSocket connection from an approved deployed client origin.
 

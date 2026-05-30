@@ -14,8 +14,9 @@ Verified source totals:
 
 Current Laravel route table:
 
-- `php artisan route:list --path=api` shows 145 API routes.
+- `php artisan route:list --path=api --json` shows 143 API routes.
 - The Laravel count is higher than the NestJS source count because it includes the temporary driver legacy alias and Laravel compatibility aliases.
+- Google/Facebook/Apple social auth routes are not registered for the current phase.
 
 ## Route Status By Area
 
@@ -65,7 +66,7 @@ Covered by tests:
 
 - OTP send/check.
 - Signup, login, email verification, reset-password, and legacy register.
-- Google, Facebook, and Apple social signup/login with fake providers.
+- Social signup/login is removed from the current phase; Laravel no longer registers the Google/Facebook/Apple social auth routes.
 - Profile update, notification token/settings, user cars, notifications.
 - Ads, app settings, services, vehicles, empty pagination, service vehicles, and requests.
 - Mail and WhatsApp side effects use local fakes in tests.
@@ -73,6 +74,7 @@ Covered by tests:
 Explicit risk acceptance:
 
 - The legacy NestJS `/driver` mobile controller route is documented in the migration plan as an unclear route. Do not cut it over without confirming client usage.
+- Google/Facebook/Apple social auth remains a legacy reference only and must not be included in cutover until explicitly re-enabled.
 
 ## Cutover Rule
 
@@ -91,7 +93,7 @@ Related cutover controls:
 
 ## Latest Check
 
-- Date: 2026-05-22
-- Command: `php artisan route:list --path=api`
-- Result: Laravel exposes 145 API routes, including compatibility aliases.
+- Date: 2026-05-25
+- Command: `php artisan route:list --path=api --json`
+- Result: Laravel exposes 143 API routes, including compatibility aliases and excluding disabled social auth endpoints.
 - Open follow-up: confirm usage of the unclear legacy mobile `/driver` route before cutover.

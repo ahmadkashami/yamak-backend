@@ -18,7 +18,6 @@ Search terms included:
 
 - `jwt`
 - `jwtDecode`
-- `jwt-decode`
 - `jsonwebtoken`
 - `decode`
 - `atob`
@@ -30,10 +29,10 @@ Search terms included:
 
 ## Findings
 
-- `mobile-rn` stores the login/social/reset `accessToken` value in auth state and sends it as a bearer token from Axios interceptors. No JWT payload decoding was found in active source.
+- `mobile-rn` stores the login/reset `accessToken` value in auth state and sends it as a bearer token from Axios interceptors. No JWT payload decoding was found in active source.
 - `yamak-dashboard` stores `response.data.data.accessToken` in `localStorage`, checks only that `accessToken`, `userData`, and `userAbility` exist, and sends the token as a bearer token. No JWT payload decoding was found in active source.
 - `yamak-drivers` stores `data.accessToken` in `AsyncStorage` and sends it as a bearer token from the Axios interceptor. No JWT payload decoding was found in active source.
-- `yamak-dashboard/package.json` still lists `jwt-decode`, but no active source imports or calls it. It is safe to leave until a dependency cleanup pass.
+- `yamak-dashboard/package.json` no longer lists the unused `jwt-decode` dependency.
 
 ## Strategy
 

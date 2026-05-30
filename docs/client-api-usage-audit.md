@@ -89,8 +89,9 @@ Authentication:
 - `POST auth/send-reset-password`
 - `POST auth/reset-password`
 - `POST auth/signup`
-- `POST auth/signup-social`
-- `POST auth/login-social`
+
+Social login:
+- `POST auth/signup-social` and `POST auth/login-social` are removed from active client usage for the current phase. Mobile must use email/password auth plus OTP/reset flows only until social providers are explicitly re-enabled.
 
 User/profile:
 - `GET app-users/profile`
@@ -128,6 +129,7 @@ Token behavior:
 - `yamak-dashboard`, `mobile-rn`, and `yamak-drivers` have basic Sanctum login/profile smoke coverage.
 - `yamak-drivers` now has driver parity coverage for login success/failure, profile get/update, vehicle owner/location/status/link/unlink, legacy prefix alias, and wrong-area token rejection.
 - Broader dashboard and mobile authenticated route response testing is still required before switching production traffic.
+- Social login buttons and API calls are removed from active clients for the current phase.
 - `yamak-drivers` uses `api/driver/v1`, while the NestJS baseline also used `api/driver-app/v1`. Laravel currently supports both roots during migration.
 - Client token storage keys differ:
   - dashboard/web: `accessToken`

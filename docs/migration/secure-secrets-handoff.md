@@ -61,17 +61,6 @@ Legacy aliases are supported during migration but should not be the primary stag
 - `WA_AUTH_TEMPLATE`
 - `WA_LANGUAGE`
 
-### OAuth And Social Providers
-
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `FACEBOOK_CLIENT_ID`
-- `FACEBOOK_CLIENT_SECRET`
-- `APPLE_CLIENT_ID`
-- `APPLE_TEAM_ID`
-- `APPLE_KEY_ID`
-- `APPLE_PRIVATE_KEY`
-
 ### Firebase And Expo
 
 - `FIREBASE_CREDENTIALS`
@@ -115,7 +104,7 @@ For each target environment:
 - Cloudinary: upload a tiny non-sensitive test image and verify `secure_url`.
 - Mail: send one staging test email to an approved test inbox.
 - WhatsApp: send one OTP/template message to an approved test number.
-- OAuth/social: verify configured provider callbacks or token validation path.
+- OAuth/social: not required for the current phase; record as deferred/removed unless the feature is explicitly re-enabled.
 - Firebase/Expo: send one approved staging notification or run a provider credential check.
 - Redis/queue: dispatch and process one harmless queue job.
 - CORS/throttle: verify allowed origins and configured API throttle value.
@@ -135,4 +124,4 @@ Notes: public ID redacted
 
 ## Current Local Status
 
-See `docs/migration/local-credentials-readiness.md` for the latest sanitized local readiness snapshot and `docs/migration/external-service-smoke-tests.md` for the provider smoke-test runbook. As of 2026-05-22, Cloudinary is configured locally and has passed real upload checks, while SMTP, WhatsApp, OAuth, Firebase/Expo, Redis deployment values, CORS, and throttle production values still require secure staging/production setup.
+See `docs/migration/local-credentials-readiness.md` for the latest sanitized local readiness snapshot and `docs/migration/external-service-smoke-tests.md` for the provider smoke-test runbook. As of 2026-05-25, OAuth/social provider credentials are not part of the required handoff because social login is disabled for the current phase; SMTP, WhatsApp, Firebase/Expo, Redis deployment values, CORS, and throttle production values still require secure staging/production setup.

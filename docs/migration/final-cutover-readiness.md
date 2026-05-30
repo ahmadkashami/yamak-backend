@@ -32,10 +32,10 @@ Reason: Laravel local parity and client single-port compatibility are documented
 | Laravel config cache on target | Pending | Run after target secrets are installed. |
 | Database backup/restore rehearsal | Pending | Required before production migration window. |
 | Cloudinary staging upload smoke | Pending | Local Cloudinary config is production-equivalent for testing, API TCP connectivity is reachable, and fake upload tests pass; latest live service upload timed out before receipt, so a bounded target upload receipt is still required. |
-| Mail staging delivery smoke | Pending | SMTP config is installed locally and TCP connectivity is reachable; bounded CLI delivery still timed out and still requires approved inbox receipt evidence. |
+| Mail staging delivery smoke | Local PASS / staging pending | SMTP config is installed locally, TCP connectivity is reachable, and the operator confirmed manual `/test-mail` delivery to the approved inbox on 2026-05-26. Repeat on staging with sanitized receipt evidence before production cutover. |
 | WhatsApp staging template smoke | Pending | Requires approved Graph API credentials and test number. |
 | Firebase/Expo smoke | Pending | Firebase and Expo services exist; target credentials and approved test tokens are still required for staging smoke. |
-| OAuth/social provider smoke | Pending | Requires approved provider test accounts/tokens. |
+| OAuth/social provider smoke | Removed for current phase | Social login is disabled; Google/Facebook/Apple buttons, routes, provider config, and smoke requirements are not part of this cutover. |
 | Redis/queue worker smoke | Pending | Requires target Redis/queue setup. |
 | Reverb WebSocket smoke | Pending | Requires target Reverb credentials, allowed origins, proxy, and process manager. |
 | Production client environment values | Pending | Deployed builds must point to the Laravel production API host. |
@@ -53,7 +53,7 @@ Do not mark final cutover readiness as done while external-service credentials a
 
 Local verification performed for this readiness pass:
 
-- `php artisan route:list --path=api` shows 145 API routes.
+- `php artisan route:list --path=api --json` shows 143 API routes after removing the current-phase social auth endpoints.
 - Client API usage audit found local single-port compatibility for `mobile-rn`, `yamak-dashboard`, `yamak-drivers`, and `yamak-web`.
 
 Target-environment verification is still required before production cutover.

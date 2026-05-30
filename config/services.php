@@ -40,11 +40,6 @@ return [
         'access_token' => env('EXPO_ACCESS_TOKEN'),
     ],
 
-    'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-    ],
-
     'cloudinary' => [
         'cloud_name' => env('CLOUDINARY_CLOUD_NAME', env('Cloudinary_Cn')),
         'api_key' => env('CLOUDINARY_API_KEY', env('Cloudinary_API_KEY')),

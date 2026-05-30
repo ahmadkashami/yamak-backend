@@ -88,7 +88,7 @@ Watch these flows during the first production window:
 
 - Dashboard auth/profile.
 - Dashboard company, branch, service, vehicle, driver, request, website, notification, and upload workflows.
-- Mobile auth/OTP/social auth/profile/user cars/notifications/services/vehicles/requests.
+- Mobile email/password auth, OTP, profile, user cars, notifications, services, vehicles, and requests.
 - Driver auth/profile/vehicle owner/location/status/link/unlink.
 - Cloudinary, mail, WhatsApp, Firebase, Redis queues, CORS, throttle behavior.
 
@@ -105,4 +105,3 @@ External service result: PASS/FAIL/BLOCKED
 Rollback needed: YES/NO
 Notes:
 ```
-

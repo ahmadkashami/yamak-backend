@@ -21,7 +21,7 @@ This pass reviewed the next 15 priority Notion board items using current page pr
 | 2 | Epic: Final Cutover Readiness | Critical | Advanced, remains In progress | Local parity is documented; target secrets, backup/restore rehearsal, provider smokes, and production client envs remain open. |
 | 3 | Blocker: Provide Demo Credentials and Stable Test Data for Full Baseline | High | Marked Done | Local baseline artifacts now include dashboard, mobile, driver, OTP, request, upload, and driver vehicle samples. |
 | 4 | Task: Cloudinary Service Migration | High | Advanced, remains In progress | Laravel service, fake tests, and local real upload are verified; target staging upload smoke still required. |
-| 5 | Epic: External Services Migration | High | Advanced, remains In progress | Laravel services/docs exist for Cloudinary, mail, WhatsApp, Firebase/Expo, Reverb, OAuth notes, and Redis/queue strategy; target provider smokes remain. |
+| 5 | Epic: External Services Migration | High | Advanced, remains In progress | Laravel services/docs exist for Cloudinary, mail, WhatsApp, Firebase/Expo, Reverb, and Redis/queue strategy; OAuth/social login is removed from the current phase. |
 | 6 | Story: Queues and Scheduler Strategy | Medium | Advanced, remains In progress | Sync parity is preserved and worker docs exist; staging worker processing still requires target runtime. |
 | 7 | Task: Replace Pusher Broadcasting with Laravel Reverb | High | Confirmed Done | Reverb config/docs/test are present; target WebSocket/process-manager smoke remains a cutover gate. |
 | 8 | Task: Switch Laravel APIs and Clients to Single Port 8000 | High | Confirmed Done | Laravel and clients use local port 8000; route/client audit docs exist. |
@@ -38,10 +38,10 @@ This pass reviewed the next 15 priority Notion board items using current page pr
 - Secure staging/production credentials and target `.env` installation.
 - Target `php artisan config:cache` after real values are installed.
 - Cloudinary staging HTTP upload smoke with bounded upload completion and sanitized receipt evidence; local config is production-equivalent for testing, but the latest live service upload attempt timed out despite configured values and reachable API TCP connection.
-- Mail staging delivery smoke with bounded send completion and approved inbox receipt evidence; the latest CLI delivery attempt timed out despite configured SMTP values and reachable SMTP TCP connection.
+- Mail staging delivery smoke with approved inbox receipt evidence; local manual `/test-mail` delivery was confirmed on 2026-05-26, but staging still needs sanitized target-environment evidence.
 - WhatsApp staging template smoke.
 - Firebase/Expo staging push smoke.
-- OAuth/social provider smoke with approved test accounts/tokens.
+- OAuth/social provider smoke is removed for the current phase because Google, Facebook, and Apple login are disabled.
 - Redis/queue worker smoke in target runtime.
 - Reverb target WebSocket, allowed-origin, reverse-proxy/TLS, and process-manager smoke.
 - Database backup/restore rehearsal before production cutover.
