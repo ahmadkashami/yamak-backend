@@ -18,7 +18,7 @@ This pass reviewed the next 15 priority Notion board items using current page pr
 | # | Notion item | Priority | Board action | Evidence / remaining gate |
 | --- | --- | --- | --- | --- |
 | 1 | Blocker: Missing Production Credentials | Critical | Advanced, remains In progress | Key checklist and smoke-test docs exist; real target secrets still required. |
-| 2 | Epic: Final Cutover Readiness | Critical | Advanced, remains In progress | Local parity is documented; target secrets, backup/restore rehearsal, provider smokes, and production client envs remain open. |
+| 2 | Epic: Final Cutover Readiness | Critical | Advanced, remains In progress | Local route inventory, config cache, and tests were refreshed on 2026-05-31; target secrets, backup/restore rehearsal, provider smokes, and production client envs remain open. |
 | 3 | Blocker: Provide Demo Credentials and Stable Test Data for Full Baseline | High | Marked Done | Local baseline artifacts now include dashboard, mobile, driver, OTP, request, upload, and driver vehicle samples. |
 | 4 | Task: Cloudinary Service Migration | High | Advanced, remains In progress | Laravel service, fake tests, and local real upload are verified; target staging upload smoke still required. |
 | 5 | Epic: External Services Migration | High | Advanced, remains In progress | Laravel services/docs exist for Cloudinary, mail, WhatsApp, Firebase/Expo, Reverb, and Redis/queue strategy; OAuth/social login is removed from the current phase. |
