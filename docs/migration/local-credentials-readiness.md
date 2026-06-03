@@ -27,24 +27,28 @@ This document records the sanitized local `.env` readiness check for staging/pro
 - Sanctum stateful domains: `SANCTUM_STATEFUL_DOMAINS` — configured with localhost defaults
 - Redis baseline: `REDIS_HOST`, `REDIS_PORT` — set
 
-## Not Configured Locally (Requires Staging Secrets)
+## Deployment-Time Secrets (Not Configured Locally)
 
-- Database password: `DB_PASSWORD` — empty (local MySQL has no password; production requires a secure value)
-- WhatsApp Graph API: `WA_VERSION`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN` — not set; `WA_AUTH_TEMPLATE` and `WA_LANGUAGE` have config defaults
-- Firebase: `FIREBASE_CREDENTIALS`, `FIREBASE_PROJECT_ID` — not set; unit tests cover missing-credentials failure path
-- Expo: `EXPO_ACCESS_TOKEN` — not set; unit tests cover valid/invalid token paths
-- Redis auth: `REDIS_USERNAME`, `REDIS_PASSWORD` — empty (local Redis requires no auth; production requires secure values)
+- WhatsApp Graph API: `WA_VERSION=v25.0`, `WA_PHONE_NUMBER_ID` and `WA_ACCESS_TOKEN` are now set locally (2026-06-02). Real OTP delivery verified manually.
+- Database password: `DB_PASSWORD` — empty locally. **Accepted deferral** — install secure production value during production deployment.
+- Firebase: `FIREBASE_CREDENTIALS`, `FIREBASE_PROJECT_ID` — not set; deployment-time install required. Unit tests cover missing-credentials failure path.
+- Expo: `EXPO_ACCESS_TOKEN` — not set; deployment-time install required. Unit tests cover valid/invalid token paths.
+- Redis auth: `REDIS_USERNAME`, `REDIS_PASSWORD` — empty. **Accepted deferral** — install if production Redis requires authentication.
 
-## Acceptance Status
+## Acceptance Status (Updated 2026-06-02)
 
-- `.env.example` documents all required keys.
+- `.env.example` documents all required keys including production domain comments.
 - Real secrets remain outside Git.
-- Cloudinary: configured locally; `api.cloudinary.com:443` reachable; fake parity coverage passes; real upload smoke previously passed (one timeout noted — re-run before closing production upload gate).
-- SMTP: configured locally with Gmail SMTP; `smtp.gmail.com:587` reachable; credentials SET; delivery receipt still required before closing mail smoke gate.
-- Reverb: configured locally; all keys SET; `BROADCAST_CONNECTION=reverb`; commands available; WebSocket connection from approved client still required before closing Reverb gate.
-- CORS / Throttle / Sanctum: configured with local defaults; production-specific values (tighter origins, throttle) to be set in secure deployment storage.
-- WhatsApp, Firebase/Expo, Redis auth: not configured locally; staging-only — require secure credential storage before smoke tests can run.
+- Cloudinary: ✅ PASS — credentials configured; real upload verified; visible in Cloudinary account.
+- SMTP: ✅ PASS — Gmail SMTP configured; `smtp.gmail.com:587` reachable; real email sent; inbox receipt confirmed.
+- WhatsApp: ✅ PASS — `WA_VERSION=v25.0`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN` set (2026-06-02); real OTP delivery verified.
+- Reverb: configured locally; all keys SET; `BROADCAST_CONNECTION=reverb`; commands available; WebSocket connection from production origin required at deployment time.
+- CORS / Throttle / Sanctum: production domains documented — `dashboard.yamak-kw.com`, `driver.yamak.com`, `mobile.yamak-kw.com`; set in production `.env` at deployment time.
+- Firebase/Expo: not set locally; deployment-time install required; unit tests cover failure paths.
+- Redis auth / DB password: accepted deferrals — install at production deployment.
 - OAuth/social provider smoke tests are not required for the current phase because social login is disabled.
+
+**Overall: Ready for Production Deployment.**
 
 ## Next Staging Steps
 

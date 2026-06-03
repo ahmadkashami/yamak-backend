@@ -10,6 +10,7 @@ use App\Models\City;
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\Driver;
+use App\Models\Role;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\State;
@@ -28,7 +29,11 @@ use Illuminate\Support\Carbon;
 
 class SeedMongoDumpCommand extends Command
 {
-    protected $signature = 'yamak:seed-mongo-dump {path=../dump/yamak-db} {--convert : Convert BSON files to JSON using bsondump before importing}';
+    protected $signature = 'yamak:seed-mongo-dump
+        {path=../dump/yamak-db : Path to directory containing line-delimited .json dump files}
+        {--convert : Convert BSON files to JSON using bsondump before importing}
+        {--clean : Truncate all data tables before importing (keeps roles/permissions)}';
+
 
     protected $description = 'Import the legacy MongoDB dump into the normalized Laravel/MySQL schema.';
 
@@ -50,11 +55,16 @@ class SeedMongoDumpCommand extends Command
             return self::FAILURE;
         }
 
+        if ($this->option('clean')) {
+            $this->cleanDatabase();
+        }
+
         DB::transaction(function () use ($path) {
             $this->importCountries($path);
             $this->importStates($path);
             $this->importCities($path);
             $this->importCompanies($path);
+            $this->importSysUsers($path);
             $this->importServices($path);
             $this->importBranches($path);
             $this->importAppSettings($path);
@@ -74,6 +84,83 @@ class SeedMongoDumpCommand extends Command
         $this->writeSummary();
 
         return self::SUCCESS;
+    }
+
+    private function cleanDatabase(): void
+    {
+        $this->warn('Cleaning all data tables (roles and permissions preserved)...');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        $tables = [
+            'personal_access_tokens',
+            'model_has_roles',
+            'model_has_permissions',
+            'request_service',
+            'driver_vehicle',
+            'vehicle_service',
+            'website_service',
+            'branch_service',
+            'user_notifications',
+            'user_cars',
+            'user_otps',
+            'service_requests',
+            'website_carousels',
+            'website_sliders',
+            'website_features',
+            'website_themes',
+            'websites',
+            'app_users',
+            'vehicles',
+            'drivers',
+            'branches',
+            'services',
+            'ads',
+            'app_settings',
+            'companies',
+            'cities',
+            'states',
+            'countries',
+            'users',
+        ];
+
+        foreach ($tables as $table) {
+            DB::table($table)->truncate();
+        }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        $this->info('Database cleaned.');
+    }
+
+    private function importSysUsers(string $path): void
+    {
+        $roleMap = Role::query()->pluck('id', 'name')->all();
+        $now = now();
+
+        foreach ($this->docs($path, 'sysusers') as $doc) {
+            $email = $doc['email'] ?? null;
+
+            if (! $email) {
+                $this->skipped('sysusers');
+                continue;
+            }
+
+            $fullName = $doc['fullName'] ?? 'User';
+
+            DB::table('users')->updateOrInsert(
+                ['email' => $email],
+                [
+                    'name' => json_encode(['en' => $fullName, 'ar' => $fullName]),
+                    'password' => $doc['password'] ?? '',
+                    'role_id' => $roleMap[$doc['role'] ?? ''] ?? null,
+                    'type' => $doc['type'] ?? 'administration',
+                    'lang' => 'en',
+                    'email_verified_at' => $now,
+                    'created_at' => $this->date($doc['createdAt'] ?? null) ?: $now,
+                    'updated_at' => $this->date($doc['updatedAt'] ?? null) ?: $now,
+                ]
+            );
+            $this->imported('sysusers');
+        }
     }
 
     private function convertBsonFiles(string $path): bool
@@ -146,7 +233,7 @@ class SeedMongoDumpCommand extends Command
 
     private function writeSummary(): void
     {
-        $required = ['countries', 'states', 'cities', 'companies', 'services', 'branches', 'appusers', 'drivers', 'vehicles'];
+        $required = ['countries', 'states', 'cities', 'sysusers', 'companies', 'services', 'branches', 'appusers', 'drivers', 'vehicles'];
 
         foreach ($required as $collection) {
             if (($this->summary[$collection]['imported'] ?? 0) === 0) {

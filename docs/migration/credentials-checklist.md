@@ -50,15 +50,15 @@ See `docs/migration/local-credentials-readiness.md` for the latest sanitized loc
 See `docs/migration/secure-secrets-handoff.md` for the staging/production handoff checklist.
 See `docs/migration/external-service-smoke-tests.md` for the shared external-service smoke-test runbook.
 
-As of 2026-05-26:
+As of 2026-06-02:
 
 - All 31 tests pass (455 assertions) after `php artisan config:clear` and `php artisan config:cache`.
-- Cloudinary: configured locally; `api.cloudinary.com:443` reachable; fake parity tests pass; real upload smoke previously confirmed; re-run before closing production upload gate.
-- SMTP: configured locally (smtp.gmail.com:587, TLS); `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_AUTH_USERNAME`, `MAIL_AUTH_PASSWORD` SET; host reachable; approved inbox receipt evidence still required before closing mail smoke gate.
-- Reverb: `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, `REVERB_HOST`, `REVERB_PORT`, `REVERB_SCHEME` all SET; `BROADCAST_CONNECTION=reverb`; `reverb:start` and `reverb:restart` commands confirmed; WebSocket client connection from approved origin still required before closing Reverb gate.
-- CORS / Throttle / Sanctum: `CORS_ALLOWED_ORIGINS=*`, `API_THROTTLE_PER_MINUTE=60`, `SANCTUM_STATEFUL_DOMAINS` configured with local defaults; tighten for production in secure deployment storage.
-- WhatsApp: `WA_VERSION`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN` not set locally — requires staging credentials.
-- Firebase/Expo: `FIREBASE_CREDENTIALS`, `FIREBASE_PROJECT_ID`, `EXPO_ACCESS_TOKEN` not set locally — requires staging credentials; unit tests cover missing-credentials failure paths.
-- Redis auth: `REDIS_USERNAME`, `REDIS_PASSWORD` empty (local Redis has no auth); requires secure values for production.
-- OAuth/social provider credentials are not required while social login remains disabled.
-- `.env.example` remains the committed key checklist; real secrets must stay in secure deployment storage.
+- Cloudinary: ✅ PASS — configured; real upload verified; visible in Cloudinary account.
+- SMTP: ✅ PASS — Gmail SMTP configured; real email delivered to approved inbox; receipt confirmed.
+- WhatsApp: ✅ PASS — `WA_VERSION=v25.0`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN` set 2026-06-02; real OTP delivery verified.
+- Reverb: configured locally; all keys SET; `BROADCAST_CONNECTION=reverb`; commands available; WebSocket connection from production origin is a deployment-time check.
+- CORS / Throttle / Sanctum: production domains documented — `dashboard.yamak-kw.com`, `driver.yamak.com`, `mobile.yamak-kw.com`; set `CORS_ALLOWED_ORIGINS`, `SANCTUM_STATEFUL_DOMAINS`, and `REVERB_ALLOWED_ORIGINS` at production deployment.
+- Firebase/Expo: `FIREBASE_CREDENTIALS`, `FIREBASE_PROJECT_ID`, `EXPO_ACCESS_TOKEN` — deployment-time install required; unit tests cover missing-credentials failure paths.
+- DB password / Redis auth: accepted deferrals — install at production deployment.
+- OAuth/social provider credentials not required; social login is disabled.
+- `.env.example` is updated with production domain comments; real secrets stay in secure deployment storage.

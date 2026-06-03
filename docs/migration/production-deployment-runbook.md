@@ -4,6 +4,24 @@
 
 This runbook covers the Laravel production deployment path for the migrated Yamak backend. It assumes the Laravel app serves dashboard, mobile, and driver APIs from one app and one API host.
 
+## Production Domains
+
+| Client | Domain |
+| --- | --- |
+| Dashboard | https://dashboard.yamak-kw.com |
+| Driver App | https://driver.yamak.com |
+| Mobile App | https://mobile.yamak-kw.com |
+
+Set these in the production `.env` before running `php artisan config:cache`:
+
+```
+CORS_ALLOWED_ORIGINS=https://dashboard.yamak-kw.com,https://driver.yamak.com,https://mobile.yamak-kw.com
+SANCTUM_STATEFUL_DOMAINS=dashboard.yamak-kw.com,driver.yamak.com,mobile.yamak-kw.com
+REVERB_ALLOWED_ORIGINS=https://dashboard.yamak-kw.com,https://driver.yamak.com,https://mobile.yamak-kw.com
+APP_ENV=production
+APP_DEBUG=false
+```
+
 Canonical API roots:
 
 - Dashboard: `/api/dashboard/v1`

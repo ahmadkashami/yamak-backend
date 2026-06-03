@@ -6,6 +6,14 @@ This plan defines the cutover and rollback controls for moving Yamak traffic fro
 
 ## Cutover Baseline
 
+Production domains:
+
+| Client | Domain |
+| --- | --- |
+| Dashboard | https://dashboard.yamak-kw.com |
+| Driver App | https://driver.yamak.com |
+| Mobile App | https://mobile.yamak-kw.com |
+
 Laravel target:
 
 - One backend app.

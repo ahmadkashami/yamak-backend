@@ -65,13 +65,12 @@ Pass criteria:
 - The response contains a Cloudinary result with a secure delivery URL.
 - No secret values or provider identifiers are printed in logs or Notion.
 
-Known local status (2026-05-26):
+Status (2026-06-02): ✅ PASS
 
-- Cloudinary is configured locally with the same production-equivalent values used for testing.
-- `api.cloudinary.com:443` is reachable from this machine (`TcpTestSucceeded: True`).
+- Cloudinary credentials configured in local `.env`.
+- Real image uploaded through `CloudinaryUploadService`; asset visible in Cloudinary account.
 - Fake upload parity coverage passes through `PublicApiSmokeTest` (31 tests, 455 assertions).
-- A previous Laravel service upload smoke passed; keep `CLOUDINARY_TIMEOUT` configured and record the next successful bounded upload receipt before marking the target upload gate PASS.
-- Staging/production should still run this smoke check after target secrets are installed.
+- Gate closed. Re-run if credentials change before production deployment.
 
 ## Mail
 
@@ -90,12 +89,11 @@ Smoke steps:
 4. Verify the inbox receives the message with the expected subject/body shape.
 5. Redact recipient details if the staging inbox address is not meant for shared notes.
 
-Local status as of 2026-05-26:
+Status (2026-06-02): ✅ PASS
 
-- Laravel `config:clear` and `config:cache` pass with SMTP values installed.
-- `MAIL_MAILER`, `MAIL_HOST` (smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_AUTH_USERNAME`, `MAIL_AUTH_PASSWORD`, `MAIL_ENCRYPTION` (tls), `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` — all SET; no secret values printed.
-- `smtp.gmail.com:587` is reachable from this machine (`TcpTestSucceeded: True`).
-- Approved inbox receipt evidence still required before closing the mail smoke gate.
+- Gmail SMTP configured; `smtp.gmail.com:587` reachable.
+- Real email sent through Laravel Mail; approved inbox receipt confirmed.
+- Gate closed.
 
 Pass criteria:
 
@@ -125,6 +123,12 @@ Smoke steps:
 2. Trigger mobile signup or reset-password with safe test data, or call `sendAuthMessage` from a controlled staging session.
 3. Verify the configured template arrives on the approved test number.
 4. Redact phone number, provider message identifiers, access token, phone number ID, and template account details.
+
+Status (2026-06-02): ✅ PASS
+
+- `WA_VERSION=v25.0`, `WA_PHONE_NUMBER_ID`, `WA_ACCESS_TOKEN` configured.
+- Real OTP delivery tested; message receipt confirmed on approved test number.
+- Gate closed.
 
 Pass criteria:
 
@@ -283,18 +287,26 @@ Required keys:
 - `CORS_ALLOWED_ORIGINS`
 - `API_THROTTLE_PER_MINUTE`
 
+Production domains (set in production `.env`):
+
+```
+CORS_ALLOWED_ORIGINS=https://dashboard.yamak-kw.com,https://driver.yamak.com,https://mobile.yamak-kw.com
+SANCTUM_STATEFUL_DOMAINS=dashboard.yamak-kw.com,driver.yamak.com,mobile.yamak-kw.com
+REVERB_ALLOWED_ORIGINS=https://dashboard.yamak-kw.com,https://driver.yamak.com,https://mobile.yamak-kw.com
+```
+
 Smoke steps:
 
-1. Confirm the deployed dashboard, mobile/web origins, and API host values are installed.
-2. Send a browser request from an allowed origin and verify CORS succeeds.
-3. Send a request from an unapproved origin and verify it is not allowed.
-4. Confirm the configured throttle value is appropriate for staging.
+1. Set production domains in the deployment environment (see values above).
+2. Send a browser request from `https://dashboard.yamak-kw.com` and verify CORS succeeds.
+3. Send a request from an unapproved origin and verify it is blocked.
+4. Confirm the configured throttle value is appropriate for production.
 
 Pass criteria:
 
-- Allowed origins work.
-- Unapproved origins are not allowed.
-- Throttle settings are documented for staging and production.
+- Allowed origins (`dashboard.yamak-kw.com`, `driver.yamak.com`, `mobile.yamak-kw.com`) work.
+- Unapproved origins are blocked.
+- Throttle settings are documented for production.
 
 ## Blocker Closure Criteria
 

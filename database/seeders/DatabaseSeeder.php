@@ -8,11 +8,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Safe for live databases: master/lookup data only, written with idempotent upserts.
+        // Seeds the 4 system roles required by the mongo dump import.
+        // After this, run: php artisan yamak:seed-mongo-dump --clean
         $this->call(BaseDataSeeder::class);
-
-        // Demo/testing only. Run manually when a full local demo dataset is needed:
-        // php artisan db:seed --class=FullDatabaseDemoSeeder
-        // $this->call(FullDatabaseDemoSeeder::class);
     }
 }
