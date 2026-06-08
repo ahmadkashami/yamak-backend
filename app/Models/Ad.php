@@ -14,7 +14,6 @@ class Ad extends Model
         'title',
         'link',
         'photo',
-        'app_code',
         'started_at',
         'expired_at',
         'status',

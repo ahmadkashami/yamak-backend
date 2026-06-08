@@ -7,7 +7,6 @@ use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class VehicleController extends Controller
 {
@@ -17,7 +16,7 @@ class VehicleController extends Controller
             ->with(['branch', 'company', 'services', 'drivers', 'currentDriver'])
             ->when($request->query('companyId'), fn ($query, $companyId) => $query->where('company_id', $companyId))
             ->when($request->query('branchId'), fn ($query, $branchId) => $query->where('branch_id', $branchId))
-            ->when($request->query('query'), fn ($query, $search) => $query->where('app_code', 'like', "%{$search}%"))
+            ->when($request->query('query'), fn ($query, $search) => $query->where('label_number', 'like', "%{$search}%"))
             ->latest('id')
             ->paginate((int) $request->query('limit', 10));
 
@@ -63,7 +62,6 @@ class VehicleController extends Controller
             'branchId' => (string) $vehicle->branch_id,
             'branch' => $vehicle->branch ? app(BranchController::class)->branchResource($vehicle->branch) : null,
             'drivers' => $vehicle->drivers->map(fn (Driver $driver) => app(DriverController::class)->driverResource($driver))->values(),
-            'appCode' => $vehicle->app_code,
             'services' => $vehicle->services->map(fn ($service) => app(ServiceController::class)->serviceResource($service))->values(),
             'createdAt' => optional($vehicle->created_at)->toJSON(),
             'workStatus' => $vehicle->work_status,
@@ -111,7 +109,6 @@ class VehicleController extends Controller
         return [
             'company_id' => $branch?->company_id ?? $data['companyId'] ?? $vehicle?->company_id,
             'branch_id' => $data['branchId'] ?? $vehicle?->branch_id,
-            'app_code' => $vehicle?->app_code ?: $this->generateAppCode($companyName, $branchName),
             'status' => $data['status'] ?? $vehicle?->status ?? 'active',
             'work_status' => $data['workStatus'] ?? $vehicle?->work_status ?? 'offline',
             'last_active_date' => now(),
@@ -134,13 +131,6 @@ class VehicleController extends Controller
             Driver::query()->where('vehicle_id', $vehicle->id)->whereNotIn('id', $data['drivers'] ?? [])->update(['vehicle_id' => null]);
             Driver::query()->whereIn('id', $data['drivers'] ?? [])->update(['vehicle_id' => $vehicle->id]);
         }
-    }
-
-    private function generateAppCode(string $companyName, string $branchName): string
-    {
-        $prefix = 'VEH'.Str::upper(substr(preg_replace('/\s+/', '', $companyName), 0, 3)).'-'.Str::upper(substr(preg_replace('/\s+/', '', $branchName), 0, 3)).'-';
-
-        return $prefix.Str::upper(Str::random(5));
     }
 
     private function paginationMeta($paginator): array

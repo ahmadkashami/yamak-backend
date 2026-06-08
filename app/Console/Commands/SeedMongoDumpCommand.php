@@ -364,7 +364,6 @@ class SeedMongoDumpCommand extends Command
                     'name_en' => $this->text($doc['name'] ?? null, 'en') ?? $doc['name_en'] ?? 'Company',
                     'name_ar' => $this->text($doc['name'] ?? null, 'ar') ?? $doc['name_ar'] ?? 'Company',
                     'phone' => $doc['phone'] ?? null,
-                    'app_code' => $doc['appCode'] ?? null,
                     'logo' => $doc['logo'] ?? null,
                     'address' => $doc['address'] ?? null,
                     'description' => $doc['description'] ?? null,
@@ -380,7 +379,7 @@ class SeedMongoDumpCommand extends Command
     {
         foreach ($this->docs($path, 'services') as $doc) {
             $service = Service::query()->updateOrCreate(
-                ['app_code' => $doc['appCode'] ?? 'SER-'.$this->oid($doc['_id'] ?? null)],
+                ['name_en' => $this->text($doc['name'] ?? null, 'en') ?? 'Service'],
                 [
                     'name_en' => $this->text($doc['name'] ?? null, 'en') ?? 'Service',
                     'name_ar' => $this->text($doc['name'] ?? null, 'ar') ?? 'Service',
@@ -396,10 +395,11 @@ class SeedMongoDumpCommand extends Command
     private function importBranches(string $path): void
     {
         foreach ($this->docs($path, 'branches') as $doc) {
+            $companyId = $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id');
             $branch = Branch::query()->updateOrCreate(
-                ['app_code' => $doc['appCode'] ?? 'BR-'.$this->oid($doc['_id'] ?? null)],
+                ['company_id' => $companyId, 'name' => $doc['name'] ?? 'Branch'],
                 [
-                    'company_id' => $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id'),
+                    'company_id' => $companyId,
                     'name' => $doc['name'] ?? 'Branch',
                     'phone' => $doc['phone'] ?? null,
                     'logo' => $doc['logo'] ?? null,
@@ -441,7 +441,7 @@ class SeedMongoDumpCommand extends Command
     {
         foreach ($this->docs($path, 'adds') as $doc) {
             Ad::query()->updateOrCreate(
-                ['app_code' => $doc['appCode'] ?? 'ADD-'.$this->oid($doc['_id'] ?? null)],
+                ['title' => $doc['title'] ?? 'Ad'],
                 [
                     'title' => $doc['title'] ?? 'Ad',
                     'link' => $doc['link'] ?? null,
@@ -512,8 +512,7 @@ class SeedMongoDumpCommand extends Command
     private function importVehicles(string $path): void
     {
         foreach ($this->docs($path, 'vehicles') as $doc) {
-            $vehicle = Vehicle::query()->updateOrCreate(
-                ['app_code' => $doc['appCode'] ?? 'VEH-'.$this->oid($doc['_id'] ?? null)],
+            $vehicle = Vehicle::query()->create(
                 [
                     'company_id' => $this->id('companies', $doc['companyId'] ?? null) ?? Company::query()->value('id'),
                     'branch_id' => $this->id('branches', $doc['branchId'] ?? null) ?? Branch::query()->value('id'),

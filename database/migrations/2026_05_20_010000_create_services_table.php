@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name_en');
             $table->string('name_ar');
-            $table->string('app_code')->nullable()->unique();
             $table->string('logo')->nullable();
             $table->string('status')->default('active')->index();
             $table->timestamps();

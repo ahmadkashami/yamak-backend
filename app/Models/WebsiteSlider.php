@@ -20,4 +20,14 @@ class WebsiteSlider extends Model
         'sub_title_ar',
         'status',
     ];
+
+    public function website(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Website::class);
+    }
+
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

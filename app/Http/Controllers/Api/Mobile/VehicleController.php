@@ -18,7 +18,7 @@ class VehicleController extends Controller
             ->with(['branch', 'company', 'services', 'drivers', 'currentDriver'])
             ->where('work_status', 'online')
             ->whereNotNull('current_driver_id')
-            ->when($request->query('query'), fn ($query, $search) => $query->where('app_code', 'like', "%{$search}%"))
+            ->when($request->query('query'), fn ($query, $search) => $query->where('label_number', 'like', "%{$search}%"))
             ->get()
             ->map(function (Vehicle $vehicle) use ($latitude, $longitude, $dashboardVehicles) {
                 $resource = $dashboardVehicles->vehicleResource($vehicle);

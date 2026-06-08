@@ -15,7 +15,6 @@ class Company extends Model
         'name_ar',
         'phone',
         'email',
-        'app_code',
         'logo',
         'status',
         'address',
@@ -35,5 +34,10 @@ class Company extends Model
     public function vehicles(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Vehicle::class);
+    }
+
+    public function websites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Website::class);
     }
 }

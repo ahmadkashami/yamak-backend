@@ -16,7 +16,6 @@ use App\Models\UserNotification;
 use App\Models\UserOtp;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -30,18 +29,7 @@ class MobileParityTest extends TestCase
     public function test_mobile_auth_otp_signup_login_legacy_register_and_reset_flows(): void
     {
         Mail::fake();
-        Http::fake([
-            'https://graph.facebook.com/*' => Http::response([
-                'messages' => [
-                    ['id' => 'wamid.test'],
-                ],
-            ]),
-        ]);
-        config([
-            'services.whatsapp.version' => 'v20.0',
-            'services.whatsapp.phone_number_id' => '123456',
-            'services.whatsapp.access_token' => 'fake-token',
-        ]);
+        $whatsApp = $this->fakeWhatsApp();
 
         $sendCode = $this->postJson('/api/mobile/v1/auth/sendCode', [
             'phone' => '965500000003',
@@ -62,17 +50,14 @@ class MobileParityTest extends TestCase
             'email' => 'new.mobile@example.com',
             'password' => '123456',
             'name' => 'New Mobile User',
-            'phone' => '965500000004',
+            'phone' => '96550535103',
         ])
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonStructure(['data' => ['user', 'accessToken']]);
 
         Mail::assertSent(UserRegistrationCodeMail::class, fn (UserRegistrationCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
-        Http::assertSent(fn ($request) => $request->url() === 'https://graph.facebook.com/v20.0/123456/messages'
-            && $request['to'] === '965500000004'
-            && $request['type'] === 'template'
-            && $request['template']['name'] === 'yamak_auth');
+        $whatsApp->assertAuthMessageSentTo('96550535103');
 
         $code = UserOtp::query()->where('email', 'new.mobile@example.com')->value('code');
         $this->postJson('/api/mobile/v1/auth/verify-email', [
@@ -109,10 +94,7 @@ class MobileParityTest extends TestCase
 
         Mail::assertSent(UserResetPasswordCodeMail::class, fn (UserResetPasswordCodeMail $mail) => $mail->hasTo('new.mobile@example.com'));
         $resetCode = AppUser::query()->where('email', 'new.mobile@example.com')->value('reset_pass_code');
-        Http::assertSent(fn ($request) => $request->url() === 'https://graph.facebook.com/v20.0/123456/messages'
-            && $request['to'] === '965500000004'
-            && $request['type'] === 'text'
-            && str_contains($request['text']['body'], $resetCode));
+        $whatsApp->assertMessageContaining('96550535103', $resetCode);
 
         $this->postJson('/api/mobile/v1/auth/check-reset-password', [
             'email' => 'new.mobile@example.com',
@@ -228,7 +210,6 @@ class MobileParityTest extends TestCase
             'started_at' => now()->subDay(),
             'expired_at' => now()->addDay(),
             'status' => 'active',
-            'app_code' => 'AD-MOBILE-PARITY',
         ]);
         [$service, $vehicle, $driver, $user] = $this->createMobileLookupFixture();
         Mail::fake();
@@ -289,17 +270,14 @@ class MobileParityTest extends TestCase
             'name_en' => 'Mobile Company',
             'name_ar' => 'Mobile Company',
             'email' => 'mobile-company@example.com',
-            'app_code' => 'COM-MOBILE-PARITY',
         ]);
         $branch = Branch::query()->create([
             'company_id' => $company->id,
             'name' => 'Mobile Branch',
-            'app_code' => 'BR-MOBILE-PARITY',
         ]);
         $service = Service::query()->create([
             'name_en' => 'Tow',
             'name_ar' => 'Tow',
-            'app_code' => 'SER-MOBILE-PARITY',
             'status' => 'active',
         ]);
         $driver = Driver::query()->create([
@@ -314,7 +292,6 @@ class MobileParityTest extends TestCase
             'company_id' => $company->id,
             'branch_id' => $branch->id,
             'current_driver_id' => $driver->id,
-            'app_code' => 'VEH-MOBILE-PARITY',
             'status' => 'active',
             'work_status' => 'online',
             'latitude' => 29.3759,

@@ -14,7 +14,6 @@ return new class extends Migration
             $table->string('name_ar');
             $table->string('phone')->nullable();
             $table->string('email')->nullable()->index();
-            $table->string('app_code')->nullable()->unique();
             $table->string('logo')->nullable();
             $table->string('status')->default('active')->index();
             $table->text('address')->nullable();
@@ -30,7 +29,6 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->string('name');
             $table->string('phone')->nullable();
-            $table->string('app_code')->nullable()->unique();
             $table->string('logo')->nullable();
             $table->string('status')->default('active')->index();
             $table->unsignedBigInteger('country_id')->nullable()->index();

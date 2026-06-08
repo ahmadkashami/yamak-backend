@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
@@ -15,8 +14,7 @@ class ServiceController extends Controller
             ->when($request->query('query'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name_en', 'like', "%{$search}%")
-                        ->orWhere('name_ar', 'like', "%{$search}%")
-                        ->orWhere('app_code', 'like', "%{$search}%");
+                        ->orWhere('name_ar', 'like', "%{$search}%");
                 });
             })
             ->latest('id')
@@ -55,7 +53,6 @@ class ServiceController extends Controller
                 ->map(fn (Service $service) => [
                     'id' => $service->id,
                     '_id' => (string) $service->id,
-                    'appCode' => $service->app_code,
                     'name' => ['en' => $service->name_en, 'ar' => $service->name_ar],
                 ])
                 ->values()
@@ -101,19 +98,9 @@ class ServiceController extends Controller
         return [
             'name_en' => $nameEn,
             'name_ar' => $nameAr,
-            'app_code' => $service?->app_code ?: $this->generateAppCode(),
             'logo' => $data['logo'] ?? $service?->logo,
             'status' => $data['status'] ?? $service?->status ?? 'active',
         ];
-    }
-
-    private function generateAppCode(): string
-    {
-        do {
-            $code = 'SER-'.Str::upper(Str::random(6));
-        } while (Service::query()->where('app_code', $code)->exists());
-
-        return $code;
     }
 
     public function serviceResource(Service $service): array
@@ -121,7 +108,6 @@ class ServiceController extends Controller
         return [
             'id' => $service->id,
             '_id' => (string) $service->id,
-            'appCode' => $service->app_code,
             'name' => ['en' => $service->name_en, 'ar' => $service->name_ar],
             'status' => $service->status,
             'createdAt' => optional($service->created_at)->toJSON(),

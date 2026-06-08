@@ -18,8 +18,7 @@ class ServiceController extends Controller
             ->when($request->query('query'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('name_en', 'like', "%{$search}%")
-                        ->orWhere('name_ar', 'like', "%{$search}%")
-                        ->orWhere('app_code', 'like', "%{$search}%");
+                        ->orWhere('name_ar', 'like', "%{$search}%");
                 });
             })
             ->oldest('id')

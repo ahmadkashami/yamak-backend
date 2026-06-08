@@ -53,12 +53,10 @@ class SeedMongoDumpCommandTest extends TestCase
         ]);
         $this->writeJsonLine($path, 'services', [
             '_id' => ['$oid' => $ids['service']],
-            'appCode' => 'SVC-1',
             'name' => ['en' => 'Fuel', 'ar' => 'Fuel'],
         ]);
         $this->writeJsonLine($path, 'branches', [
             '_id' => ['$oid' => $ids['branch']],
-            'appCode' => 'BR-1',
             'companyId' => ['$oid' => $ids['company']],
             'name' => 'Main Branch',
             'services' => [['$oid' => $ids['service']]],
@@ -77,7 +75,6 @@ class SeedMongoDumpCommandTest extends TestCase
         ]);
         $this->writeJsonLine($path, 'vehicles', [
             '_id' => ['$oid' => '64f000000000000000000010'],
-            'appCode' => 'VEH-1',
             'companyId' => ['$oid' => $ids['company']],
             'branchId' => ['$oid' => $ids['branch']],
             'currentDriver' => ['$oid' => $ids['driver']],

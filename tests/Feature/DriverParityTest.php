@@ -82,8 +82,10 @@ class DriverParityTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.latitude', '29.3759000')
-            ->assertJsonPath('data.longitude', '47.9774000');
+            ->assertJsonPath('data.geoLocation.latitude', 29.3759)
+            ->assertJsonPath('data.geoLocation.longitude', 47.9774)
+            ->assertJsonPath('data.geoLocation.coordinates.0', 47.9774)
+            ->assertJsonPath('data.geoLocation.coordinates.1', 29.3759);
 
         $this->putJson('/api/driver/v1/vehicles/'.$vehicle->id, [
             'workStatus' => 'offline',
@@ -127,13 +129,11 @@ class DriverParityTest extends TestCase
             'name_en' => 'Driver Parity Company',
             'name_ar' => 'Driver Parity Company',
             'email' => 'driver-parity-company@example.com',
-            'app_code' => 'COM-DRIVER-PARITY',
         ]);
 
         $branch = Branch::query()->create([
             'company_id' => $company->id,
             'name' => 'Driver Parity Branch',
-            'app_code' => 'BR-DRIVER-PARITY',
         ]);
 
         return Driver::query()->create([
@@ -152,7 +152,6 @@ class DriverParityTest extends TestCase
         $vehicle = Vehicle::query()->create([
             'company_id' => $driver->company_id,
             'branch_id' => $driver->branch_id,
-            'app_code' => 'VEH-DRIVER-PARITY',
             'status' => 'active',
             'work_status' => 'offline',
         ]);

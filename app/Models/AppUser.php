@@ -44,4 +44,19 @@ class AppUser extends Authenticatable
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
     ];
+
+    public function cars(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserCar::class);
+    }
+
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserNotification::class);
+    }
+
+    public function requests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ServiceRequest::class);
+    }
 }

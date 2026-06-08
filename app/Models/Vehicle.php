@@ -14,7 +14,6 @@ class Vehicle extends Model
         'company_id',
         'branch_id',
         'current_driver_id',
-        'app_code',
         'status',
         'work_status',
         'last_active_date',

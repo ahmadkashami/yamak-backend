@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('link')->nullable();
             $table->string('photo');
-            $table->string('app_code')->unique();
             $table->dateTime('started_at')->index();
             $table->dateTime('expired_at')->index();
             $table->string('status')->default('active')->index();

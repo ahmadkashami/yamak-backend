@@ -34,7 +34,6 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
             $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
             $table->foreignId('current_driver_id')->nullable()->constrained('drivers')->nullOnDelete();
-            $table->string('app_code')->unique();
             $table->string('status')->default('active')->index();
             $table->string('work_status')->default('offline')->index();
             $table->timestamp('last_active_date')->nullable();

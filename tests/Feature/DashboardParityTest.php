@@ -370,7 +370,6 @@ class DashboardParityTest extends TestCase
         $vehicleId = Vehicle::query()->create([
             'company_id' => $companyId,
             'branch_id' => $branchId,
-            'app_code' => 'VEH-RELATED',
             'status' => 'active',
             'work_status' => 'available',
         ])->id;
@@ -464,17 +463,14 @@ class DashboardParityTest extends TestCase
             'name_en' => 'Parity Ops Company',
             'name_ar' => 'Parity Ops Company',
             'email' => 'parity-ops@example.com',
-            'app_code' => 'COM-PARITY-OPS',
         ]);
         $branch = Branch::query()->create([
             'company_id' => $company->id,
             'name' => 'Parity Ops Branch',
-            'app_code' => 'BRA-PARITY-OPS',
         ]);
         $service = Service::query()->create([
             'name_en' => 'Parity Ops Service',
             'name_ar' => 'Parity Ops Service',
-            'app_code' => 'SER-PARITY-OPS',
             'status' => 'active',
         ]);
         $driver = Driver::query()->create([
@@ -489,7 +485,6 @@ class DashboardParityTest extends TestCase
             'company_id' => $company->id,
             'branch_id' => $branch->id,
             'current_driver_id' => $driver->id,
-            'app_code' => 'VEH-PARITY-OPS',
             'status' => 'active',
             'work_status' => 'online',
         ]);

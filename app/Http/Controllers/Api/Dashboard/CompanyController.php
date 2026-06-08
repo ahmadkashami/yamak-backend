@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class CompanyController extends Controller
 {
@@ -109,20 +108,11 @@ class CompanyController extends Controller
             'name_ar' => $nameAr,
             'phone' => $data['phone'] ?? $company?->phone,
             'email' => $data['email'] ?? $company?->email,
-            'app_code' => $company?->app_code ?: $this->generateAppCode($nameEn),
             'logo' => $data['logo'] ?? $company?->logo,
             'status' => $data['status'] ?? $company?->status ?? 'active',
             'address' => $data['address'] ?? $company?->address,
             'description' => $data['description'] ?? $company?->description,
         ];
-    }
-
-    private function generateAppCode(?string $name): string
-    {
-        $prefix = strtoupper(substr(preg_replace('/\s+/', '', $name ?: 'COM'), 0, 3));
-        $prefix = $prefix ?: 'COM';
-
-        return 'COM-'.$prefix.'-'.Str::upper(Str::random(5));
     }
 
     public function companyResource(Company $company): array
@@ -133,7 +123,6 @@ class CompanyController extends Controller
             'name' => ['en' => $company->name_en, 'ar' => $company->name_ar],
             'phone' => $company->phone,
             'email' => $company->email,
-            'appCode' => $company->app_code,
             'logo' => $company->logo,
             'status' => $company->status,
             'address' => $company->address,

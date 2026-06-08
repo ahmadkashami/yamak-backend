@@ -14,7 +14,6 @@ class Branch extends Model
         'company_id',
         'name',
         'phone',
-        'app_code',
         'logo',
         'status',
         'country_id',
@@ -25,6 +24,11 @@ class Branch extends Model
         'zip_code',
         'latitude',
         'longitude',
+    ];
+
+    protected $casts = [
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

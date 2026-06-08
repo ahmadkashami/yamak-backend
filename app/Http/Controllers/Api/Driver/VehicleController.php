@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Driver;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class VehicleController extends Controller
 {
@@ -21,7 +22,7 @@ class VehicleController extends Controller
         return response()->success($dashboardVehicles->vehicleResource($vehicle));
     }
 
-    public function updateLocation(Request $request): \Illuminate\Http\JsonResponse
+    public function updateLocation(Request $request, DashboardVehicleController $dashboardVehicles): \Illuminate\Http\JsonResponse
     {
         /** @var Driver $driver */
         $driver = $request->user();
@@ -53,7 +54,9 @@ class VehicleController extends Controller
             'last_active_date' => now(),
         ]);
 
-        return response()->success($vehicle->fresh());
+        return response()->success($dashboardVehicles->vehicleResource(
+            $vehicle->fresh(['branch', 'company', 'services', 'drivers', 'currentDriver'])
+        ));
     }
 
     public function update(Request $request, Vehicle $vehicle, DashboardVehicleController $dashboardVehicles): \Illuminate\Http\JsonResponse

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class AdController extends Controller
 {
@@ -15,7 +14,6 @@ class AdController extends Controller
             ->when($request->query('query'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
-                        ->orWhere('app_code', 'like', "%{$search}%")
                         ->orWhere('link', 'like', "%{$search}%");
                 });
             })
@@ -74,20 +72,10 @@ class AdController extends Controller
             'title' => $data['title'] ?? $ad?->title,
             'link' => $data['link'] ?? $ad?->link,
             'photo' => $data['photo'] ?? $ad?->photo,
-            'app_code' => $ad?->app_code ?: $this->generateAppCode(),
             'started_at' => $data['startedAt'] ?? $ad?->started_at ?? now(),
             'expired_at' => $data['expiredAt'] ?? $ad?->expired_at ?? now()->addMonth(),
             'status' => $data['status'] ?? $ad?->status ?? 'active',
         ];
-    }
-
-    private function generateAppCode(): string
-    {
-        do {
-            $code = 'ADD-'.Str::upper(Str::random(6));
-        } while (Ad::query()->where('app_code', $code)->exists());
-
-        return $code;
     }
 
     public function adResource(Ad $ad): array
@@ -98,7 +86,6 @@ class AdController extends Controller
             'title' => $ad->title,
             'link' => $ad->link,
             'photo' => $ad->photo,
-            'appCode' => $ad->app_code,
             'startedAt' => optional($ad->started_at)->toJSON(),
             'expiredAt' => optional($ad->expired_at)->toJSON(),
             'status' => $ad->status,

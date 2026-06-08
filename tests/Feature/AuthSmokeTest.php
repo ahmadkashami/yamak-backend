@@ -56,13 +56,11 @@ class AuthSmokeTest extends TestCase
             'name_en' => 'Demo Company',
             'name_ar' => 'Demo Company',
             'email' => 'demo-company@example.com',
-            'app_code' => 'COM-DEMO',
         ]);
 
         $branch = Branch::query()->create([
             'company_id' => $company->id,
             'name' => 'Demo Branch',
-            'app_code' => 'BR-DEMO',
         ]);
 
         Driver::query()->create([

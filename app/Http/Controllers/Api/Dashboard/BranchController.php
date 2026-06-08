@@ -7,7 +7,6 @@ use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 class BranchController extends Controller
 {
@@ -103,7 +102,6 @@ class BranchController extends Controller
             'companyId' => (string) $branch->company_id,
             'logo' => $branch->logo,
             'status' => $branch->status,
-            'appCode' => $branch->app_code,
             'address' => [
                 'countryId' => $branch->country_id ? (string) $branch->country_id : null,
                 'stateId' => $branch->state_id ? (string) $branch->state_id : null,
@@ -152,7 +150,6 @@ class BranchController extends Controller
             'company_id' => $data['companyId'] ?? $branch?->company_id,
             'name' => $name,
             'phone' => $data['phone'] ?? $branch?->phone,
-            'app_code' => $branch?->app_code ?: $this->generateAppCode($name),
             'logo' => $data['logo'] ?? $branch?->logo,
             'status' => $data['status'] ?? $branch?->status ?? 'active',
             'country_id' => $address['countryId'] ?? $branch?->country_id,
@@ -178,14 +175,6 @@ class BranchController extends Controller
                 'updated_at' => now(),
             ]);
         }
-    }
-
-    private function generateAppCode(?string $name): string
-    {
-        $prefix = strtoupper(substr(preg_replace('/\s+/', '', $name ?: 'BRA'), 0, 3));
-        $prefix = $prefix ?: 'BRA';
-
-        return 'BRA-'.$prefix.'-'.Str::upper(Str::random(5));
     }
 
     private function paginationMeta($paginator): array
