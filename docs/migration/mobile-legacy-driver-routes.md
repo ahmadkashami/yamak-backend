@@ -4,7 +4,7 @@
 
 Keep the Laravel `api/driver-app/v1` compatibility alias during migration, but do not add any mobile-specific `/driver` route handling.
 
-The current `mobile-rn` source does not call legacy driver API roots directly. Driver API compatibility is still useful for the driver client and for any older deployed clients during cutover, so Laravel should keep the existing `api/driver-app/v1` alias until client rollout is complete.
+The current `yamak-mobile` source does not call legacy driver API roots directly. Driver API compatibility is still useful for the driver client and for any older deployed clients during cutover, so Laravel should keep the existing `api/driver-app/v1` alias until client rollout is complete.
 
 ## Audit Scope
 
@@ -15,7 +15,7 @@ Checked mobile client source and configuration for:
 - `/driver`
 - `driver/v1`
 
-The only `mobile-rn` match was `vehicle.currentDriver.phoneNum` used to open a WhatsApp contact link from `VehiclesDetailsScreen.tsx`. It is data display behavior, not an API route.
+The only `yamak-mobile` match was `vehicle.currentDriver.phoneNum` used to open a WhatsApp contact link from `VehiclesDetailsScreen.tsx`. It is data display behavior, not an API route.
 
 ## Laravel Route State
 

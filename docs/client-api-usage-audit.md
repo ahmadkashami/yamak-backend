@@ -9,7 +9,7 @@ This audit records client-side API usage that must be preserved or updated immed
 | `yamak-dashboard` | `VITE_BASE_URL`, currently expected to point to `http://localhost:8000/api/dashboard/v1/` |
 | `yamak-web` | `VITE_BASE_URL`, currently expected to point to `http://localhost:8000/api/dashboard/v1/` |
 | `yamak-drivers` | `http://localhost:8000/api/driver/v1/` |
-| `mobile-rn` | `EXPO_PUBLIC_API_PRO` or `http://localhost:8000/api/mobile/v1/`; custom runtime base URL can override it |
+| `yamak-mobile` | `EXPO_PUBLIC_API_PRO` or `http://localhost:8000/api/mobile/v1/`; custom runtime base URL can override it |
 
 ## yamak-dashboard
 
@@ -77,7 +77,7 @@ Vehicle workflow:
 Token behavior:
 - Reads `token` from AsyncStorage and sends `Authorization: Bearer <token>`.
 
-## mobile-rn
+## yamak-mobile
 
 Authentication:
 - `POST /api/mobile/client/v1/register` is kept as a Laravel compatibility alias because `FormAuthScreen` expects the legacy `{ data, access_token }` response shape.
@@ -125,8 +125,8 @@ Token behavior:
 
 ## High-Risk Findings
 
-- `mobile-rn` has one register call using `/api/mobile/client/v1/register`; Laravel keeps this as a compatibility alias until that legacy screen is removed or migrated.
-- `yamak-dashboard`, `mobile-rn`, and `yamak-drivers` have basic Sanctum login/profile smoke coverage.
+- `yamak-mobile` has one register call using `/api/mobile/client/v1/register`; Laravel keeps this as a compatibility alias until that legacy screen is removed or migrated.
+- `yamak-dashboard`, `yamak-mobile`, and `yamak-drivers` have basic Sanctum login/profile smoke coverage.
 - `yamak-drivers` now has driver parity coverage for login success/failure, profile get/update, vehicle owner/location/status/link/unlink, legacy prefix alias, and wrong-area token rejection.
 - Broader dashboard and mobile authenticated route response testing is still required before switching production traffic.
 - Social login buttons and API calls are removed from active clients for the current phase.
@@ -134,5 +134,5 @@ Token behavior:
 - Client token storage keys differ:
   - dashboard/web: `accessToken`
   - drivers: `token`
-  - mobile-rn: `auth.state.token`
+  - yamak-mobile: `auth.state.token`
 - Do not change response envelope or token fields without updating the affected client immediately.

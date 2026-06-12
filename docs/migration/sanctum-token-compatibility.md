@@ -10,7 +10,7 @@ Keep the existing response field names (`accessToken` and legacy `access_token` 
 
 Checked active token usage in:
 
-- `mobile-rn/src`
+- `yamak-mobile/src`
 - `yamak-dashboard/src`
 - `yamak-drivers/src`
 
@@ -29,7 +29,7 @@ Search terms included:
 
 ## Findings
 
-- `mobile-rn` stores the login/reset `accessToken` value in auth state and sends it as a bearer token from Axios interceptors. No JWT payload decoding was found in active source.
+- `yamak-mobile` stores the login/reset `accessToken` value in auth state and sends it as a bearer token from Axios interceptors. No JWT payload decoding was found in active source.
 - `yamak-dashboard` stores `response.data.data.accessToken` in `localStorage`, checks only that `accessToken`, `userData`, and `userAbility` exist, and sends the token as a bearer token. No JWT payload decoding was found in active source.
 - `yamak-drivers` stores `data.accessToken` in `AsyncStorage` and sends it as a bearer token from the Axios interceptor. No JWT payload decoding was found in active source.
 - `yamak-dashboard/package.json` no longer lists the unused `jwt-decode` dependency.
@@ -46,8 +46,8 @@ Search terms included:
 Commands run from the workspace root:
 
 ```bash
-rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken|atob|Authorization|Bearer|accessToken|access_token|token" mobile-rn/src
+rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken|atob|Authorization|Bearer|accessToken|access_token|token" yamak-mobile/src
 rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken|atob|Authorization|Bearer|accessToken|access_token|token" yamak-dashboard/src
 rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken|atob|Authorization|Bearer|accessToken|access_token|token" yamak-drivers/src
-rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken" mobile-rn yamak-dashboard yamak-drivers -g "package.json" -g "package-lock.json" -g "yarn.lock"
+rg -n "jwt|decode|jwtDecode|jwt-decode|jsonwebtoken" yamak-mobile yamak-dashboard yamak-drivers -g "package.json" -g "package-lock.json" -g "yarn.lock"
 ```

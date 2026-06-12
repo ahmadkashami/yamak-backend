@@ -37,7 +37,7 @@ All Laravel implementation work is complete. External service smoke tests for Wh
 | Local parity tests | ✅ PASS | 31 tests, 455 assertions pass after `php artisan test`. |
 | Route registration | ✅ PASS | 143 API routes registered as of 2026-05-31. |
 | Config cache | ✅ PASS | `php artisan config:cache` passes locally. |
-| Client compatibility | ✅ PASS | `mobile-rn`, `yamak-dashboard`, `yamak-drivers`, `yamak-web` all point to port 8000 locally. |
+| Client compatibility | ✅ PASS | `yamak-mobile`, `yamak-dashboard`, `yamak-drivers`, `yamak-web` all point to port 8000 locally. |
 | API route inventory | ✅ PASS | 133 NestJS source routes mapped; 143 Laravel routes (includes compatibility aliases). |
 | Database schema | ✅ PASS | Normalized relational tables; no generic JSON document columns. |
 | OAuth/social providers | ✅ Removed | Social login disabled for current phase; no smoke test required. |
@@ -110,7 +110,7 @@ php artisan up
 Set deployed client builds to point to the production API host:
 
 - `yamak-dashboard` — update API base URL in `.env` to the production API host.
-- `mobile-rn` — update API base URL in app config to the production API host.
+- `yamak-mobile` — update API base URL in app config to the production API host.
 - `yamak-drivers` — update API base URL in app config to the production API host.
 - `yamak-web` — update API base URL to the production API host.
 

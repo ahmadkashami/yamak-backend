@@ -11,7 +11,7 @@ Laravel target roots:
 - Driver: `http://localhost:8000/api/driver/v1/`
 - Temporary driver alias: `http://localhost:8000/api/driver-app/v1/`
 
-## mobile-rn
+## yamak-mobile
 
 Status: compatible with the Laravel mobile root.
 

@@ -109,4 +109,4 @@ All return `'_id' => (string) $model->id` alongside integer `'id'`. No client-vi
 
 ## 6. No Client Updates Required
 
-Because the `_id` shim is in place and all camelCase API keys match the NestJS baseline exactly, no client app (mobile-rn, yamak-drivers, yamak-dashboard, yamak-web) requires changes to its API field references.
+Because the `_id` shim is in place and all camelCase API keys match the NestJS baseline exactly, no client app (yamak-mobile, yamak-drivers, yamak-dashboard, yamak-web) requires changes to its API field references.

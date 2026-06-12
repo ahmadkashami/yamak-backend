@@ -50,7 +50,7 @@ Evidence:
 
 - Mobile API root, auth/OTP/signup/login/reset/social flows, profile, user cars, notifications, ads, app settings, services, vehicles, and requests are covered by `tests/Feature/MobileParityTest.php`.
 - Mobile service/vehicle coordinate order and request mail side effects are covered.
-- `mobile-rn` local API configuration points to `http://localhost:8000/api/mobile/v1/`.
+- `yamak-mobile` local API configuration points to `http://localhost:8000/api/mobile/v1/`.
 - Legacy mobile `/driver` risk is documented separately in `docs/migration/mobile-legacy-driver-routes.md`.
 
 ## API Parity Testing

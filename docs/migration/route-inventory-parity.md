@@ -9,7 +9,7 @@ Verified source totals:
 | --- | ---: | ---: | --- | --- | --- |
 | Dashboard | 23 | 91 | Migrated as Laravel dashboard routes | Expanded critical coverage for auth, stats, sys users, roles, companies, branches, locations, website content, app users, requests, notifications, and upload | `yamak-dashboard` base URL audit exists |
 | Driver | 4 | 9 | Migrated under `api/driver/v1` plus temporary `api/driver-app/v1` alias | Driver parity suite passes | `yamak-drivers` uses Laravel `api/driver/v1`; existing dirty client changes were not touched |
-| Mobile | 11 | 33 | Migrated under `api/mobile/v1` plus legacy register alias | Mobile parity suite passes for critical paths | `mobile-rn` usage audit exists; existing dirty client changes were not touched |
+| Mobile | 11 | 33 | Migrated under `api/mobile/v1` plus legacy register alias | Mobile parity suite passes for critical paths | `yamak-mobile` usage audit exists; existing dirty client changes were not touched |
 | Total | 38 | 133 | Tracked | Tracked by risk level | Tracked by client area |
 
 Current Laravel route table:

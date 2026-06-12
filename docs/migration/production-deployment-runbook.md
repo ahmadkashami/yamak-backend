@@ -125,7 +125,7 @@ Use `docs/migration/external-service-smoke-tests.md` for redaction rules and pro
 
 Verify deployed clients call the Laravel API roots:
 
-- `mobile-rn`: `/api/mobile/v1`
+- `yamak-mobile`: `/api/mobile/v1`
 - `yamak-dashboard`: `/api/dashboard/v1`
 - `yamak-drivers`: `/api/driver/v1`
 - `yamak-web`: `/api/dashboard/v1` for current website content endpoints.
