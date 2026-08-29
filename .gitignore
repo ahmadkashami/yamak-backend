@@ -26,7 +26,6 @@ firebase-*.json
 *service-account*.json
 google-services.json
 GoogleService-Info.plist
-.replit
 /storage/app/*
 /storage/framework/*
 /storage/logs/*
