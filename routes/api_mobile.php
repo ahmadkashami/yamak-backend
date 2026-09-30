@@ -11,8 +11,8 @@ use App\Http\Controllers\Api\Mobile\UserController;
 use App\Http\Controllers\Api\Mobile\UserNotificationController;
 use App\Http\Controllers\Api\Mobile\VehicleController;
 
-Route::prefix('mobile/client/v1')->name('api.mobile_legacy.')->group(function () {
-    Route::post('register', [AuthController::class, 'legacyRegister'])->name('register');
+Route::prefix('mobile/v1')->name('api.mobile_legacy.')->group(function () {
+    Route::post('auth/register', [AuthController::class, 'legacyRegister'])->name('register');
 });
 
 Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
