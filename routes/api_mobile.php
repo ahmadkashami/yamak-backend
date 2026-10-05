@@ -60,3 +60,6 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::get('user-notifications/mine', [UserNotificationController::class, 'mine'])->name('user-notifications.mine');
     });
 });
+
+Route::get('onboarding', [App\Http\Controllers\Api\Mobile\OnboardingController::class, 'show'])->name('onboarding.show');
+

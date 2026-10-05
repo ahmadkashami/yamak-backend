@@ -102,3 +102,10 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
             ->only(['index', 'store', 'destroy']);
     });
 });
+
+Route::post('onboardings/{onboarding}/publish', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'publish'])->name('onboardings.publish');
+Route::post('onboardings/{onboarding}/activate', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'activate'])->name('onboardings.activate');
+Route::post('onboardings/{onboarding}/disable', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'disable'])->name('onboardings.disable');
+Route::apiResource('onboardings', App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class)->except(['destroy']);
+Route::delete('onboardings/{onboarding}', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'destroy'])->name('onboardings.destroy');
+
