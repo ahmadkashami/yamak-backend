@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Mobile\AdController;
 use App\Http\Controllers\Api\Mobile\AppSettingController;
 use App\Http\Controllers\Api\Mobile\AuthController;
+use App\Http\Controllers\Api\Mobile\OnboardingController;
 use App\Http\Controllers\Api\Mobile\RequestController;
 use App\Http\Controllers\Api\Mobile\ServiceController;
 use App\Http\Controllers\Api\Mobile\UserCarController;
@@ -48,6 +49,8 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
     Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+    Route::get('onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
+
     Route::apiResource('requests', RequestController::class)->except(['create', 'edit']);
 
     Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
@@ -60,6 +63,3 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::get('user-notifications/mine', [UserNotificationController::class, 'mine'])->name('user-notifications.mine');
     });
 });
-
-Route::get('onboarding', [App\Http\Controllers\Api\Mobile\OnboardingController::class, 'show'])->name('onboarding.show');
-

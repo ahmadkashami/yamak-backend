@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Image;
 use App\Models\Onboarding;
 use App\Models\OnboardingSlide;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class OnboardingController extends Controller
 {
@@ -69,23 +67,14 @@ class OnboardingController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'is_skippable' => ['nullable', 'boolean'],
-            'slides' => ['required', 'array', 'min:1'],
-            'slides.*.sort_order' => ['required', 'integer', 'min:1'],
-            'slides.*.title_en' => ['required', 'string', 'max:255'],
-            'slides.*.title_ar' => ['nullable', 'string', 'max:255'],
-            'slides.*.description_en' => ['nullable', 'string'],
-            'slides.*.description_ar' => ['nullable', 'string'],
-            'slides.*.image' => ['nullable'],
-        ]);
+        $data = $request->validate($this->slideRules());
 
         $this->validateUniqueSortOrders($data['slides']);
 
-        $nextVersion = $this->getNextVersion();
-
         $onboarding = null;
-        DB::transaction(function () use ($data, $nextVersion, &$onboarding) {
+        DB::transaction(function () use ($data, &$onboarding) {
+            $nextVersion = $this->getNextVersion();
+
             $onboarding = Onboarding::query()->create([
                 'version' => $nextVersion,
                 'status' => 'draft',
@@ -122,17 +111,7 @@ class OnboardingController extends Controller
             ], 422);
         }
 
-        $data = $request->validate([
-            'is_skippable' => ['nullable', 'boolean'],
-            'slides' => ['nullable', 'array', 'min:1'],
-            'slides.*.id' => ['nullable', 'integer'],
-            'slides.*.sort_order' => ['required_with:slides', 'integer', 'min:1'],
-            'slides.*.title_en' => ['required_with:slides', 'string', 'max:255'],
-            'slides.*.title_ar' => ['nullable', 'string', 'max:255'],
-            'slides.*.description_en' => ['nullable', 'string'],
-            'slides.*.description_ar' => ['nullable', 'string'],
-            'slides.*.image' => ['nullable'],
-        ]);
+        $data = $request->validate($this->slideRules(false));
 
         if (isset($data['slides'])) {
             $this->validateUniqueSortOrders($data['slides']);
@@ -259,7 +238,10 @@ class OnboardingController extends Controller
 
     private function getNextVersion(): int
     {
-        $max = Onboarding::query()->withTrashed()->max('version');
+        // Called inside the create transaction. lockForUpdate serialises concurrent
+        // draft creation; the unique index on onboardings.version is the final guard.
+        $max = Onboarding::query()->withTrashed()->lockForUpdate()->max('version');
+
         return $max ? ((int) $max + 1) : 1;
     }
 
@@ -271,35 +253,42 @@ class OnboardingController extends Controller
         }
     }
 
-    private function attachImage(OnboardingSlide $slide, $imageData): void
+    private function slideRules(bool $creating = true): array
     {
-        $path = is_string($imageData) ? $imageData : ($imageData['path'] ?? ($imageData['url'] ?? null));
-        if (! $path) {
-            return;
-        }
+        return [
+            'is_skippable' => ['nullable', 'boolean'],
+            'slides' => [$creating ? 'required' : 'nullable', 'array', 'min:1'],
+            'slides.*.id' => ['nullable', 'integer'],
+            'slides.*.sort_order' => ['required', 'integer', 'min:1'],
+            'slides.*.title_en' => ['required', 'string', 'max:255'],
+            'slides.*.title_ar' => ['nullable', 'string', 'max:255'],
+            'slides.*.description_en' => ['nullable', 'string'],
+            'slides.*.description_ar' => ['nullable', 'string'],
+            // The dashboard submits the Cloudinary secure_url returned by files-upload.
+            'slides.*.image' => ['nullable', 'string', 'url', 'max:2048'],
+        ];
+    }
 
+    private function attachImage(OnboardingSlide $slide, string $imageUrl): void
+    {
         $slide->image()->create([
-            'path' => $path,
+            'path' => $imageUrl,
             'description' => null,
         ]);
     }
 
-    private function syncImage(OnboardingSlide $slide, $imageData): void
+    private function syncImage(OnboardingSlide $slide, ?string $imageUrl): void
     {
-        if (empty($imageData)) {
+        if (empty($imageUrl)) {
             $slide->image()->delete();
-            return;
-        }
 
-        $path = is_string($imageData) ? $imageData : ($imageData['path'] ?? ($imageData['url'] ?? null));
-        if (! $path) {
             return;
         }
 
         if ($slide->image) {
-            $slide->image()->update(['path' => $path]);
+            $slide->image()->update(['path' => $imageUrl]);
         } else {
-            $this->attachImage($slide, $imageData);
+            $this->attachImage($slide, $imageUrl);
         }
     }
 

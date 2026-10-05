@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\DriverController;
 use App\Http\Controllers\Api\Dashboard\FilesUploadController;
 use App\Http\Controllers\Api\Dashboard\NotificationController;
+use App\Http\Controllers\Api\Dashboard\OnboardingController;
 use App\Http\Controllers\Api\Dashboard\RequestController;
 use App\Http\Controllers\Api\Dashboard\RoleController;
 use App\Http\Controllers\Api\Dashboard\ServiceController;
@@ -100,12 +101,9 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('website-carousels', WebsiteCarouselController::class)
             ->parameters(['website-carousels' => 'websiteCarousel'])
             ->only(['index', 'store', 'destroy']);
+        Route::apiResource('onboardings', OnboardingController::class);
+        Route::post('onboardings/{onboarding}/publish', [OnboardingController::class, 'publish'])->name('onboardings.publish');
+        Route::post('onboardings/{onboarding}/activate', [OnboardingController::class, 'activate'])->name('onboardings.activate');
+        Route::post('onboardings/{onboarding}/disable', [OnboardingController::class, 'disable'])->name('onboardings.disable');
     });
 });
-
-Route::post('onboardings/{onboarding}/publish', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'publish'])->name('onboardings.publish');
-Route::post('onboardings/{onboarding}/activate', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'activate'])->name('onboardings.activate');
-Route::post('onboardings/{onboarding}/disable', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'disable'])->name('onboardings.disable');
-Route::apiResource('onboardings', App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class)->except(['destroy']);
-Route::delete('onboardings/{onboarding}', [App\\Http\\Controllers\\Api\\Dashboard\\OnboardingController::class, 'destroy'])->name('onboardings.destroy');
-

@@ -36,6 +36,15 @@ class ApiRouteRegistrationTest extends TestCase
             ['api/dashboard/v1/website-sliders', 'GET'],
             ['api/dashboard/v1/website-themes/websites/{website}', 'GET'],
             ['api/dashboard/v1/website-carousels', 'GET'],
+            ['api/dashboard/v1/onboardings', 'GET'],
+            ['api/dashboard/v1/onboardings', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'GET'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'PUT'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'PATCH'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'DELETE'],
+            ['api/dashboard/v1/onboardings/{onboarding}/publish', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}/activate', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}/disable', 'POST'],
         ] as [$uri, $method]) {
             $this->assertRouteRegistered($uri, $method);
         }
@@ -80,16 +89,57 @@ class ApiRouteRegistrationTest extends TestCase
             ['api/mobile/v1/services/{service}/vehicles', 'GET'],
             ['api/mobile/v1/vehicles', 'GET'],
             ['api/mobile/v1/requests', 'POST'],
+            ['api/mobile/v1/onboarding', 'GET'],
         ] as [$uri, $method]) {
             $this->assertRouteRegistered($uri, $method);
         }
     }
 
-    private function assertRouteRegistered(string $uri, string $method): void
+    public function test_onboarding_routes_are_scoped_and_middleware_correct(): void
     {
-        $route = collect(Route::getRoutes())->first(function ($route) use ($uri, $method) {
+        foreach ([
+            ['api/dashboard/v1/onboardings', 'GET'],
+            ['api/dashboard/v1/onboardings', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'GET'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'PATCH'],
+            ['api/dashboard/v1/onboardings/{onboarding}', 'DELETE'],
+            ['api/dashboard/v1/onboardings/{onboarding}/publish', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}/activate', 'POST'],
+            ['api/dashboard/v1/onboardings/{onboarding}/disable', 'POST'],
+        ] as [$uri, $method]) {
+            $middleware = $this->routeMiddleware($uri, $method);
+
+            $this->assertContains('auth:sanctum', $middleware, "{$method} {$uri} must require sanctum auth.");
+            $this->assertContains('api.area:dashboard', $middleware, "{$method} {$uri} must be restricted to the dashboard area.");
+        }
+
+        $mobileMiddleware = $this->routeMiddleware('api/mobile/v1/onboarding', 'GET');
+
+        $this->assertNotContains('auth:sanctum', $mobileMiddleware, 'The mobile onboarding endpoint must stay public read-only.');
+        $this->assertNotContains('api.area:mobile', $mobileMiddleware, 'The mobile onboarding endpoint must not require a mobile token.');
+
+        $this->assertNull($this->findRoute('api/onboarding', 'GET'), 'onboarding must not be registered outside the mobile/v1 prefix.');
+        $this->assertNull($this->findRoute('api/onboardings', 'GET'), 'onboardings must not be registered outside the dashboard/v1 prefix.');
+    }
+
+    private function findRoute(string $uri, string $method)
+    {
+        return collect(Route::getRoutes())->first(function ($route) use ($uri, $method) {
             return $route->uri() === $uri && in_array($method, $route->methods(), true);
         });
+    }
+
+    private function routeMiddleware(string $uri, string $method): array
+    {
+        $route = $this->findRoute($uri, $method);
+        $this->assertNotNull($route, "{$method} {$uri} is not registered.");
+
+        return $route->gatherMiddleware();
+    }
+
+    private function assertRouteRegistered(string $uri, string $method): void
+    {
+        $route = $this->findRoute($uri, $method);
 
         $this->assertNotNull($route, "{$method} {$uri} is not registered.");
     }

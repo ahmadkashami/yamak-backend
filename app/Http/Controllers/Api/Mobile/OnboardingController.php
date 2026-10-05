@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\Onboarding;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class OnboardingController extends Controller
 {
-    public function show(Request $request): JsonResponse
+    public function show(): JsonResponse
     {
+        // The activation transaction guarantees a single active row. orderByDesc('version')
+        // only makes the read deterministic if corrupted data ever holds more than one.
         $onboarding = Onboarding::query()
             ->with(['slides.image'])
             ->where('status', 'published')
             ->where('is_active', true)
+            ->orderByDesc('version')
             ->first();
 
         if (! $onboarding) {
@@ -23,18 +27,16 @@ class OnboardingController extends Controller
             ]);
         }
 
-        $locale = strtolower($request->get('lang') ?? $request->header('Accept-Language') ?? 'en');
-        if (strlen($locale) > 2) {
-            $locale = substr($locale, 0, 2);
-        }
+        // App\Http\Middleware\SetLocale owns ?lang / Accept-Language resolution for the api group.
+        $isArabic = Str::startsWith(App::getLocale(), 'ar');
 
-        $slides = $onboarding->slides->map(function ($slide) use ($locale) {
+        $slides = $onboarding->slides->map(function ($slide) use ($isArabic) {
             $imageUrl = $slide->image ? ($slide->image->path ?? null) : null;
 
             $title = $slide->title_en;
             $description = $slide->description_en;
 
-            if ($locale === 'ar') {
+            if ($isArabic) {
                 if (! empty($slide->title_ar)) {
                     $title = $slide->title_ar;
                 }
