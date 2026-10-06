@@ -131,6 +131,8 @@ class OnboardingController extends Controller
                     OnboardingSlide::query()->whereIn('id', $toDelete)->delete();
                 }
 
+                $this->stageSlidesForReorder($onboarding, $data['slides']);
+
                 foreach ($data['slides'] as $slideData) {
                     if (! empty($slideData['id'])) {
                         $slide = OnboardingSlide::query()->find($slideData['id']);
@@ -250,6 +252,46 @@ class OnboardingController extends Controller
         $orders = collect($slides)->pluck('sort_order')->toArray();
         if (count($orders) !== count(array_unique($orders))) {
             abort(422, 'Duplicate sort_order values found');
+        }
+    }
+
+    /**
+     * UNIQUE(onboarding_id, sort_order) rejects an in-place reorder: writing a slide's
+     * new sort_order while another slide still occupies that value raises a 23000
+     * violation (HTTP 500) on both MySQL and SQLite.
+     *
+     * Phase 1 of a two-phase write: move every surviving slide to a temporary order
+     * that is strictly greater than any requested order, so the final writes performed
+     * by the caller can never collide with an order that is still occupied. The loop
+     * is phase 2.
+     *
+     * Temporary values stay positive because sort_order is an unsigned column, and they
+     * are derived from the payload rather than a magic constant. All surviving slides
+     * are staged, not only the ones that appear to move, because an unchanged slide can
+     * still block a slide that moves onto its order.
+     */
+    private function stageSlidesForReorder(Onboarding $onboarding, array $slides): void
+    {
+        if (empty($slides)) {
+            return;
+        }
+
+        $survivingIds = $onboarding->slides()->pluck('id')->all();
+
+        if (empty($survivingIds)) {
+            return;
+        }
+
+        $highestRequestedOrder = max(array_map(
+            fn (array $slide): int => (int) $slide['sort_order'],
+            $slides
+        ));
+
+        // Query builder update: it must not touch updated_at, which phase 2 sets.
+        foreach (array_values($survivingIds) as $offset => $slideId) {
+            OnboardingSlide::query()
+                ->whereKey($slideId)
+                ->update(['sort_order' => $highestRequestedOrder + 1 + $offset]);
         }
     }
 
