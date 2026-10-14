@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Mobile\UserCarController;
 use App\Http\Controllers\Api\Mobile\UserController;
 use App\Http\Controllers\Api\Mobile\UserNotificationController;
 use App\Http\Controllers\Api\Mobile\VehicleController;
+use App\Http\Controllers\Api\Mobile\V2\RequestController as V2RequestController;
 
 Route::prefix('mobile/v1')->name('api.mobile_legacy.')->group(function () {
     Route::post('auth/register', [AuthController::class, 'legacyRegister'])->name('register');
@@ -51,8 +52,11 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::get('onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
 
-    Route::apiResource('requests', RequestController::class)->except(['create', 'edit']);
-
+    // B2.2B.1 containment: the legacy request resource is no longer public.
+    // Only POST is retained (the sole operation used by the legacy mobile app)
+    // and it now requires an authenticated AppUser holding the "mobile"
+    // ability. The previously public index/show/update/destroy methods were
+    // removed: no client uses them and they exposed cross-user reads/writes.
     Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
         Route::get('app-users/profile', [UserController::class, 'profile'])->name('app-users.profile');
         Route::patch('app-users/profile', [UserController::class, 'updateProfile'])->name('app-users.profile.update');
@@ -61,5 +65,27 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::post('user-cars', [UserCarController::class, 'store'])->name('user-cars.store');
         Route::delete('user-cars/{userCar}', [UserCarController::class, 'destroy'])->name('user-cars.destroy');
         Route::get('user-notifications/mine', [UserNotificationController::class, 'mine'])->name('user-notifications.mine');
+        Route::post('requests', [RequestController::class, 'store'])->name('requests.store');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Mobile API v2 (authenticated, owner-scoped)
+|--------------------------------------------------------------------------
+| Secure versioned mobile surface. Identity is derived ONLY from the
+| authenticated AppUser (Sanctum, "mobile" token ability) and never from
+| client-supplied ids.
+|
+| B2.2B.1 scope: READ operations only. Request CREATION is fail-closed
+| (503 NOT_ENABLED) until eligibility (B2.2B.2) and idempotency (B2.2B.3)
+| hardening are complete. This endpoint must NOT become an operational write
+| path before then.
+*/
+Route::prefix('mobile/v2')->name('api.mobile.v2.')->group(function () {
+    Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
+        Route::get('requests', [V2RequestController::class, 'index'])->name('requests.index');
+        Route::get('requests/{serviceRequest}', [V2RequestController::class, 'show'])->name('requests.show');
+        Route::post('requests', [V2RequestController::class, 'store'])->name('requests.store');
     });
 });

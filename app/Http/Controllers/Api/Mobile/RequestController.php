@@ -35,10 +35,19 @@ class RequestController extends Controller
             'status' => ['nullable', 'string', 'max:50'],
         ]);
 
+        // B2.2B.1a ownership guard: a mobile user may only create requests for
+        // themselves. The authenticated AppUser is authoritative; a client
+        // supplied userId that does not match is rejected (403) before any
+        // persistence or email. The userId field is kept for Legacy payload
+        // compatibility and validated for existence above.
+        if ((int) $data['userId'] !== (int) $request->user()->id) {
+            abort(403);
+        }
+
         $driver = Driver::query()->findOrFail($data['driverId']);
         $serviceRequest = ServiceRequest::query()->create([
             'platform' => $data['platform'] ?? 'mobile',
-            'app_user_id' => $data['userId'],
+            'app_user_id' => $request->user()->id,
             'driver_id' => $driver->id,
             'company_id' => $driver->company_id,
             'branch_id' => $driver->branch_id,
