@@ -65,6 +65,6 @@ class RequestController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        return response()->error('request_creation_not_enabled', 503, null, 'NOT_ENABLED');
+        return response()->error('request_creation_not_enabled', 503, [], 'NOT_ENABLED');
     }
 }

@@ -77,7 +77,7 @@ class MobileParityTest extends TestCase
             ->assertJsonPath('data.isVerified', true)
             ->assertJsonStructure(['data' => ['user', 'accessToken']]);
 
-        $this->postJson('/api/mobile/client/v1/register', [
+        $this->postJson('/api/mobile/v1/auth/register', [
             'email' => 'legacy.mobile@example.com',
             'password' => '123456',
             'name' => 'Legacy Mobile User',
@@ -246,6 +246,8 @@ class MobileParityTest extends TestCase
             ->assertJsonPath('data.0.geoLocation.coordinates.0', 47.9774)
             ->assertJsonPath('data.0.geoLocation.coordinates.1', 29.3759);
 
+        Sanctum::actingAs($user, ['mobile']);
+
         $requestId = $this->postJson('/api/mobile/v1/requests', [
             'driverId' => $driver->id,
             'userId' => $user->id,
@@ -258,10 +260,10 @@ class MobileParityTest extends TestCase
 
         Mail::assertSent(UserRequestOrderMail::class, fn (UserRequestOrderMail $mail) => $mail->hasTo($driver->email));
 
+        // B2.2B.1 containment: the legacy public request detail endpoint was
+        // removed (only the authenticated, ownership-guarded POST remains).
         $this->getJson('/api/mobile/v1/requests/'.$requestId)
-            ->assertOk()
-            ->assertJsonPath('success', true)
-            ->assertJsonPath('data.id', $requestId);
+            ->assertNotFound();
     }
 
     private function createMobileLookupFixture(): array

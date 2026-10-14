@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\AuthenticationException;
@@ -100,6 +101,11 @@ class Handler extends ExceptionHandler
             }
             
             return response()->error($translationKey ?: $message, $statusCode);
+        }
+
+        // Handle ModelNotFoundException (implicit route binding, soft-deleted) for API requests
+        if ($e instanceof ModelNotFoundException && $request->is('api/*')) {
+            return response()->error('resource_not_found', 404);
         }
 
         // Handle all other exceptions for API requests

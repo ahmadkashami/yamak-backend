@@ -69,7 +69,7 @@ class ApiRouteRegistrationTest extends TestCase
     public function test_mobile_compatibility_routes_are_registered(): void
     {
         foreach ([
-            ['api/mobile/client/v1/register', 'POST'],
+            ['api/mobile/v1/auth/register', 'POST'],
             ['api/mobile/v1/auth/sendCode', 'POST'],
             ['api/mobile/v1/auth/checkCode', 'POST'],
             ['api/mobile/v1/auth/signup', 'POST'],
