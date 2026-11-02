@@ -248,20 +248,20 @@ class MobileParityTest extends TestCase
 
         Sanctum::actingAs($user, ['mobile']);
 
-        $requestId = $this->postJson('/api/mobile/v1/requests', [
-            'driverId' => $driver->id,
-            'userId' => $user->id,
-            'services' => [$service->id],
-        ])
+        $requestId = $this->withHeaders(['Idempotency-Key' => 'e7a62f43-9b82-4c01-8ab2-7d902e61f753'])
+            ->postJson('/api/mobile/v1/requests', [
+                'vehicleId' => $vehicle->id,
+                'driverId' => $driver->id,
+                'services' => [$service->id],
+            ])
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.driver.id', $driver->id)
             ->json('data.id');
 
-        Mail::assertSent(UserRequestOrderMail::class, fn (UserRequestOrderMail $mail) => $mail->hasTo($driver->email));
+        Mail::assertNothingSent();
 
-        // B2.2B.1 containment: the legacy public request detail endpoint was
-        // removed (only the authenticated, ownership-guarded POST remains).
+        // B2.2C.4: consolidated to hardened v1; legacy public detail removed.
         $this->getJson('/api/mobile/v1/requests/'.$requestId)
             ->assertNotFound();
     }

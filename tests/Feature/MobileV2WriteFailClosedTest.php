@@ -10,12 +10,7 @@ use Tests\Concerns\CreatesRequestFixtures;
 use Tests\TestCase;
 
 /**
- * B2.2C.2 — HTTP fail-closed verification for the mobile v2 write surface.
- *
- * Even an authenticated, fully eligible mobile user must NOT be able to create
- * a request yet: v2 POST returns 503 NOT_ENABLED and performs no persistence,
- * no pivot write, no idempotency claim and no notification. v2 exposes no
- * update/delete verbs at all.
+ * B2.2C.4 — v2 POST consolidated to v1; endpoint removed.
  */
 class MobileV2WriteFailClosedTest extends TestCase
 {
@@ -37,18 +32,14 @@ class MobileV2WriteFailClosedTest extends TestCase
         ];
     }
 
-    public function test_authenticated_v2_store_returns_503_not_enabled(): void
+    public function test_authenticated_v2_store_returns_404_after_consolidation(): void
     {
         $fixture = $this->makeRequestFixture(1);
         $user = $this->makeAppUser();
         Sanctum::actingAs($user, ['mobile']);
 
         $this->postJson('/api/mobile/v2/requests', $this->validPayload($fixture))
-            ->assertStatus(503)
-            ->assertJsonPath('success', false)
-            ->assertJsonPath('message', 'request_creation_not_enabled')
-            ->assertJsonPath('errors.code', 'NOT_ENABLED')
-            ->assertJsonPath('errors.details', []);
+            ->assertStatus(404);
     }
 
     public function test_v2_store_writes_nothing_and_sends_no_mail(): void
@@ -60,7 +51,7 @@ class MobileV2WriteFailClosedTest extends TestCase
         Sanctum::actingAs($user, ['mobile']);
 
         $this->postJson('/api/mobile/v2/requests', $this->validPayload($fixture))
-            ->assertStatus(503);
+            ->assertStatus(404);
 
         $this->assertDatabaseCount('service_requests', 0);
         $this->assertDatabaseCount('request_service', 0);

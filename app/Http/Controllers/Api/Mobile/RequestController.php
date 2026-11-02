@@ -4,65 +4,72 @@ namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Api\Dashboard\RequestController as DashboardRequestController;
 use App\Http\Controllers\Controller;
-use App\Mail\UserRequestOrderMail;
-use App\Models\Driver;
-use App\Models\ServiceRequest;
+use App\Services\RequestCreationService;
+use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
+use RuntimeException;
 
 class RequestController extends Controller
 {
-    public function index(DashboardRequestController $dashboardRequests): \Illuminate\Http\JsonResponse
+    public function index(DashboardRequestController $dashboardRequests): JsonResponse
     {
         return response()->success(
             ServiceRequest::query()
                 ->with(['appUser', 'driver.branch', 'driver.company', 'services'])
                 ->latest('id')
                 ->get()
-                ->map(fn (ServiceRequest $serviceRequest) => $dashboardRequests->requestResource($serviceRequest))
+                ->map(fn (\App\Models\ServiceRequest $serviceRequest) => $dashboardRequests->requestResource($serviceRequest))
                 ->values()
         );
     }
 
-    public function store(Request $request, DashboardRequestController $dashboardRequests): \Illuminate\Http\JsonResponse
+    public function store(Request $request, DashboardRequestController $dashboardRequests, RequestCreationService $service): JsonResponse
     {
         $data = $request->validate([
-            'driverId' => ['required', 'integer', 'exists:drivers,id'],
-            'userId' => ['required', 'integer', 'exists:app_users,id'],
-            'services' => ['nullable', 'array'],
-            'services.*' => ['integer', 'exists:services,id'],
-            'platform' => ['nullable', 'string', 'max:50'],
-            'status' => ['nullable', 'string', 'max:50'],
+            'vehicleId' => ['required', 'integer'],
+            'driverId' => ['required', 'integer'],
+            'services' => ['required', 'array', 'min:1'],
+            'services.*' => ['integer'],
         ]);
 
-        // B2.2B.1a ownership guard: a mobile user may only create requests for
-        // themselves. The authenticated AppUser is authoritative; a client
-        // supplied userId that does not match is rejected (403) before any
-        // persistence or email. The userId field is kept for Legacy payload
-        // compatibility and validated for existence above.
-        if ((int) $data['userId'] !== (int) $request->user()->id) {
-            abort(403);
+        $idempotencyKey = $request->header('Idempotency-Key') ?? $request->input('idempotencyKey');
+
+        if (! is_string($idempotencyKey) || trim($idempotencyKey) === '') {
+            throw ValidationException::withMessages([
+                'idempotencyKey' => ['The Idempotency-Key header is required.'],
+            ]);
         }
 
-        $driver = Driver::query()->findOrFail($data['driverId']);
-        $serviceRequest = ServiceRequest::query()->create([
-            'platform' => $data['platform'] ?? 'mobile',
-            'app_user_id' => $request->user()->id,
-            'driver_id' => $driver->id,
-            'company_id' => $driver->company_id,
-            'branch_id' => $driver->branch_id,
-            'status' => $data['status'] ?? 'active',
-        ]);
-
-        $serviceRequest->services()->sync($data['services'] ?? []);
-
-        if ($driver->email) {
-            Mail::to($driver->email)->send(new UserRequestOrderMail(now()));
+        try {
+            $result = $service->create(
+                $request->user(),
+                (int) $data['vehicleId'],
+                (int) $data['driverId'],
+                $data['services'],
+                $idempotencyKey,
+            );
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (InvalidArgumentException $e) {
+            throw ValidationException::withMessages([
+                'idempotencyKey' => [$e->getMessage()],
+            ]);
+        } catch (DomainException $e) {
+            throw ValidationException::withMessages([
+                'idempotencyKey' => [$e->getMessage()],
+            ]);
+        } catch (RuntimeException $e) {
+            throw ValidationException::withMessages([
+                'idempotencyKey' => [$e->getMessage()],
+            ]);
         }
 
-        return response()->success($dashboardRequests->requestResource(
-            $serviceRequest->fresh(['appUser', 'driver.branch', 'driver.company', 'services'])
-        ));
+        $serviceRequest = $result['request']->fresh(['appUser', 'driver.branch', 'driver.company', 'services']);
+
+        return response()->success($dashboardRequests->requestResource($serviceRequest));
     }
 
     public function show(ServiceRequest $request, DashboardRequestController $dashboardRequests): \Illuminate\Http\JsonResponse

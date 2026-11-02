@@ -56,15 +56,8 @@ class RequestController extends Controller
         ));
     }
 
-    /**
-     * Fail-closed placeholder.
-     *
-     * Request creation is intentionally NOT enabled in B2.2B.1. It must never
-     * write to the database and must never return a fake success. Eligibility
-     * (B2.2B.2) and idempotency (B2.2B.3) hardening must land first.
-     */
     public function store(Request $request): JsonResponse
     {
-        return response()->error('request_creation_not_enabled', 503, [], 'NOT_ENABLED');
+        abort(404);
     }
 }
