@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\IdempotencyConflictException;
 use App\Models\RequestIdempotencyKey;
 use App\Models\ServiceRequest;
 use App\Services\RequestCreationService;
 use App\Support\Idempotency\RequestFingerprint;
-use DomainException;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -158,7 +159,7 @@ class RequestCreationServiceTest extends TestCase
 
         $this->service()->create($user, $fixture['vehicle']->id, $fixture['driver']->id, [$fixture['services'][0]->id], $key);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(IdempotencyConflictException::class);
 
         $this->service()->create($user, $fixture['vehicle']->id, $fixture['driver']->id, [$fixture['services'][1]->id], $key);
     }

@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Exceptions\IdempotencyConflictException;
 use App\Models\AppUser;
 use App\Models\RequestIdempotencyKey;
 use App\Models\ServiceRequest;
 use App\Support\Idempotency\RequestFingerprint;
-use DomainException;
+
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -33,10 +34,10 @@ use RuntimeException;
  * Result shape (structured data, never an HTTP response):
  *   ['request' => ServiceRequest, 'wasCreated' => bool, 'wasReplayed' => bool]
  *
- * Failure modes are signalled with standard SPL exceptions so a future
+ * Failure modes are signalled with explicit exceptions so a future
  * controller can map them without this service knowing about HTTP:
  *   - InvalidArgumentException  … malformed idempotency key or service ids
- *   - DomainException           … same key reused with a different payload
+ *   - IdempotencyConflictException … same key reused with a different payload
  *   - RuntimeException          … inconsistent record / retries exhausted
  *   - ValidationException       … propagated from the eligibility validator
  */
@@ -185,7 +186,7 @@ class RequestCreationService
     private function replay(RequestIdempotencyKey $existing, string $fingerprint): array
     {
         if (! hash_equals((string) $existing->request_fingerprint, $fingerprint)) {
-            throw new DomainException('The Idempotency-Key was already used with a different payload.');
+            throw new IdempotencyConflictException('The Idempotency-Key was already used with a different payload.');
         }
 
         // Soft-deleted or hard-deleted linked requests resolve to null here; we

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Mobile;
 
+use App\Exceptions\IdempotencyConflictException;
 use App\Http\Controllers\Api\Dashboard\RequestController as DashboardRequestController;
 use App\Http\Controllers\Controller;
 use App\Services\RequestCreationService;
@@ -57,6 +58,8 @@ class RequestController extends Controller
             throw ValidationException::withMessages([
                 'idempotencyKey' => [$e->getMessage()],
             ]);
+        } catch (IdempotencyConflictException $e) {
+            return response()->error($e->getMessage(), 409);
         } catch (DomainException $e) {
             throw ValidationException::withMessages([
                 'idempotencyKey' => [$e->getMessage()],
