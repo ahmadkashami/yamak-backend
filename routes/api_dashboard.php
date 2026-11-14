@@ -79,7 +79,11 @@ Route::prefix('dashboard/v1')->name('api.dashboard.')->group(function () {
         Route::apiResource('driver', DriverController::class)->parameters(['driver' => 'driver']);
         Route::apiResource('vehicles', VehicleController::class)->only(['index', 'store', 'show', 'update']);
         Route::apiResource('app-users', AppUserController::class)->only(['index', 'show']);
-        Route::apiResource('requests', RequestController::class)->only(['index', 'store']);
+        Route::apiResource('requests', RequestController::class)->only(['index', 'show', 'store']);
+
+        // Status transition endpoint: PATCH /api/dashboard/v1/requests/{id}/status
+        Route::patch('requests/{requestId}/status', [RequestController::class, 'statusUpdate'])
+            ->name('requests.statusUpdate');
         Route::apiResource('adds', AdController::class)->parameters(['adds' => 'ad']);
         Route::apiResource('app-setting', AppSettingController::class)
             ->parameters(['app-setting' => 'appSetting'])
