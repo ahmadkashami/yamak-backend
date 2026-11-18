@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Mail\UserRegistrationCodeMail;
-use App\Mail\UserRequestOrderMail;
 use App\Mail\UserResetPasswordCodeMail;
 use App\Models\Ad;
 use App\Models\AppSetting;
@@ -248,22 +247,48 @@ class MobileParityTest extends TestCase
 
         Sanctum::actingAs($user, ['mobile']);
 
-        $requestId = $this->withHeaders(['Idempotency-Key' => 'e7a62f43-9b82-4c01-8ab2-7d902e61f753'])
+        $creation = $this->withHeaders(['Idempotency-Key' => 'e7a62f43-9b82-4c01-8ab2-7d902e61f753'])
             ->postJson('/api/mobile/v1/requests', [
                 'vehicleId' => $vehicle->id,
                 'driverId' => $driver->id,
                 'services' => [$service->id],
+                'channel' => 'app',
+                'latitude' => 29.3759,
+                'longitude' => 47.9774,
             ])
             ->assertOk()
             ->assertJsonPath('success', true)
+            ->assertJsonPath('data.channel', 'app')
             ->assertJsonPath('data.driver.id', $driver->id)
-            ->json('data.id');
+            ->assertJsonPath('data.driver.name', 'Mobile Driver')
+            ->assertJsonPath('data.driver.phoneNum', '965500000001')
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.vehicleId', $vehicle->id)
+            ->assertJsonPath('data.driverId', (string) $driver->id)
+            ->assertJsonPath('data.services.0.id', $service->id)
+            ->assertJsonPath('data.services.0.name.en', 'Tow')
+            ->assertJsonPath('data.services.0.name.ar', 'Tow');
+
+        $requestId = $creation->json('data.id');
+        $this->assertIsInt($requestId);
+        $this->assertSame((string) $requestId, $creation->json('data._id'));
+        $this->assertArrayNotHasKey('platform', $creation->json('data'));
+        $this->assertArrayNotHasKey('userId', $creation->json('data'));
+        $this->assertArrayNotHasKey('latitude', $creation->json('data'));
+        $this->assertArrayNotHasKey('longitude', $creation->json('data'));
 
         Mail::assertNothingSent();
 
-        // B2.2C.4: consolidated to hardened v1; legacy public detail removed.
+        // B3.3: the v1 detail route is now the owner-scoped My Requests read.
         $this->getJson('/api/mobile/v1/requests/'.$requestId)
-            ->assertNotFound();
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.id', $requestId)
+            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.provider_phone', '965500000001')
+            ->assertJsonMissingPath('data.allowedTransitions')
+            ->assertJsonMissingPath('data.availableReasons')
+            ->assertJsonMissingPath('data.statusHistory');
     }
 
     private function createMobileLookupFixture(): array
@@ -287,6 +312,7 @@ class MobileParityTest extends TestCase
             'branch_id' => $branch->id,
             'name' => 'Mobile Driver',
             'email' => 'mobile.driver@example.com',
+            'phone_num' => '965500000001',
             'password' => '123456',
             'status' => 'active',
         ]);
@@ -306,5 +332,4 @@ class MobileParityTest extends TestCase
 
         return [$service, $vehicle, $driver, $user];
     }
-
 }

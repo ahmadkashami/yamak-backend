@@ -88,6 +88,8 @@ class ApiRouteRegistrationTest extends TestCase
             ['api/mobile/v1/services', 'GET'],
             ['api/mobile/v1/services/{service}/vehicles', 'GET'],
             ['api/mobile/v1/vehicles', 'GET'],
+            ['api/mobile/v1/requests', 'GET'],
+            ['api/mobile/v1/requests/{id}', 'GET'],
             ['api/mobile/v1/requests', 'POST'],
             ['api/mobile/v1/onboarding', 'GET'],
         ] as [$uri, $method]) {

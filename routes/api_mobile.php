@@ -52,11 +52,11 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
     Route::get('vehicles/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::get('onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
 
-    // B2.2B.1 containment: the legacy request resource is no longer public.
-    // Only POST is retained (the sole operation used by the legacy mobile app)
-    // and it now requires an authenticated AppUser holding the "mobile"
-    // ability. The previously public index/show/update/destroy methods were
-    // removed: no client uses them and they exposed cross-user reads/writes.
+    // B2.2B.1 containment retained for writes: only POST remains reachable for
+    // creation, behind an authenticated AppUser holding the "mobile" ability.
+    // B3.3 adds SECURE owner-scoped reads on the same canonical v1 namespace.
+    // The v1 index/show handlers are now the hardened My Requests readers;
+    // update/destroy remain unexposed. No client-supplied ownership is accepted.
     Route::middleware(['auth:sanctum', 'api.area:mobile'])->group(function () {
         Route::get('app-users/profile', [UserController::class, 'profile'])->name('app-users.profile');
         Route::patch('app-users/profile', [UserController::class, 'updateProfile'])->name('app-users.profile.update');
@@ -65,6 +65,9 @@ Route::prefix('mobile/v1')->name('api.mobile.')->group(function () {
         Route::post('user-cars', [UserCarController::class, 'store'])->name('user-cars.store');
         Route::delete('user-cars/{userCar}', [UserCarController::class, 'destroy'])->name('user-cars.destroy');
         Route::get('user-notifications/mine', [UserNotificationController::class, 'mine'])->name('user-notifications.mine');
+        // B3.3: secure My Requests reads (owner-scoped, safe allowlists).
+        Route::get('requests', [RequestController::class, 'index'])->name('requests.index');
+        Route::get('requests/{id}', [RequestController::class, 'show'])->whereNumber('id')->name('requests.show');
         Route::post('requests', [RequestController::class, 'store'])->name('requests.store');
     });
 });

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api\Mobile;
 use App\Exceptions\IdempotencyConflictException;
 use App\Http\Controllers\Api\Dashboard\RequestController as DashboardRequestController;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Mobile\MyRequestDetailResource;
+use App\Http\Resources\Mobile\MyRequestSummaryResource;
 use App\Http\Resources\Mobile\ServiceRequestResource;
+use App\Models\ServiceRequest;
 use App\Services\RequestCreationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,16 +18,39 @@ use InvalidArgumentException;
 
 class RequestController extends Controller
 {
-    public function index(DashboardRequestController $dashboardRequests): JsonResponse
+    /**
+     * B3.3 — owner-scoped My Requests listing.
+     *
+     * Identity is taken only from the Sanctum-authenticated AppUser. The owner
+     * filter is applied BEFORE pagination and BEFORE serialisation; no client
+     * supplied userId is ever read. The dedicated mobile resource is the only
+     * serializer used here (never a Dashboard resource).
+     */
+    public function index(Request $request): JsonResponse
     {
-        return response()->success(
-            ServiceRequest::query()
-                ->with(['appUser', 'driver.branch', 'driver.company', 'services'])
-                ->latest('id')
-                ->get()
-                ->map(fn (\App\Models\ServiceRequest $serviceRequest) => $dashboardRequests->requestResource($serviceRequest))
+        $page = $this->positiveInt($request->query('page'), 1, PHP_INT_MAX);
+        $perPage = $this->positiveInt($request->query('perPage'), 20, 50);
+
+        $requests = ServiceRequest::query()
+            ->where('app_user_id', $request->user()->id)
+            ->with(['vehicle', 'services'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->success([
+            'list' => $requests->getCollection()
+                ->map(fn (ServiceRequest $serviceRequest) => (new MyRequestSummaryResource($serviceRequest))->resolve($request))
                 ->values()
-        );
+                ->all(),
+            'metaData' => [
+                'totalCount' => $requests->total(),
+                'currentCount' => $requests->count(),
+                'currentPage' => $requests->currentPage(),
+                'itemsPerPage' => $requests->perPage(),
+                'lastPage' => $requests->lastPage(),
+            ],
+        ]);
     }
 
     public function store(Request $request, RequestCreationService $service): JsonResponse
@@ -127,11 +153,46 @@ class RequestController extends Controller
         );
     }
 
-    public function show(ServiceRequest $request, DashboardRequestController $dashboardRequests): JsonResponse
+    /**
+     * B3.3 — owner-only detail read.
+     *
+     * The owner predicate is part of the lookup itself, so a foreign or
+     * nonexistent id is indistinguishable: both return the standard 404 error
+     * envelope. No existence information is revealed before serialisation.
+     */
+    public function show(Request $request, string $id): JsonResponse
     {
-        return response()->success($dashboardRequests->requestResource(
-            $request->load(['appUser', 'driver.branch', 'driver.company', 'services'])
-        ));
+        $serviceRequest = ServiceRequest::query()
+            ->where('id', $id)
+            ->where('app_user_id', $request->user()->id)
+            ->with([
+                'vehicle',
+                'driver',
+                'services',
+                'statusHistories' => fn ($query) => $query->orderBy('created_at')->orderBy('id'),
+            ])
+            ->first();
+
+        if ($serviceRequest === null) {
+            return response()->error('not_found', 404, null, 'NOT_FOUND');
+        }
+
+        return response()->success(
+            (new MyRequestDetailResource($serviceRequest))->resolve($request)
+        );
+    }
+
+    /**
+     * Normalise an optional positive integer query value. Invalid values fall
+     * back to the documented default; values above $maximum are clamped.
+     */
+    private function positiveInt(mixed $value, int $default, int $maximum): int
+    {
+        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+            return $default;
+        }
+
+        return min($maximum, max(1, (int) $value));
     }
 
     public function update(Request $httpRequest, ServiceRequest $request, DashboardRequestController $dashboardRequests): JsonResponse
