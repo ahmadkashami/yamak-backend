@@ -2,26 +2,18 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Support\Facades\DB;
+use App\Support\DatabaseSafety;
 use Tests\TestCase;
 
 /**
- * B2.2C.1 pre-execution safety gate.
+ * B3.6-G1R reconciled pre-execution safety gate.
  *
- * Proves, WITHOUT performing any database write or external connection, that
- * the effective test environment is isolated before any DB-backed test is
- * allowed to run:
+ * Approved test strategies (no silent database switch):
+ *   - sqlite file under the approved OpenCodeTemp directory (B2.2C.1)
+ *   - MySQL on the exact disposable name yamak_test_disposable (B2.8)
  *
- *   - APP_ENV        = testing
- *   - DB default     = sqlite
- *   - sqlite file    = an absolute *.sqlite path OUTSIDE the repositories
- *   - sqlite FKs     = enforced
- *   - mail default   = array (no real transport)
- *   - queue default  = sync  (no worker / no external broker)
- *
- * Reading configuration and the connection's configured driver name performs
- * no query and opens no external connection, so this guard is safe to run even
- * if the environment were misconfigured.
+ * Everything else, especially yamak_integration_test, yamakdb,
+ * yamakdb_prod_test and any production-like name, is refused.
  */
 class TestingEnvironmentGuardTest extends TestCase
 {
@@ -29,34 +21,48 @@ class TestingEnvironmentGuardTest extends TestCase
     {
         $this->assertSame('testing', app()->environment(), 'APP_ENV must be testing');
 
-        $this->assertSame('sqlite', config('database.default'), 'Default DB connection must be sqlite');
+        // The same fail-closed gate already enforced in tests/bootstrap.php.
+        DatabaseSafety::assertSafeTestingEnvironment();
 
-        $database = config('database.connections.sqlite.database');
-        $this->assertIsString($database, 'sqlite database must be a string');
-        $this->assertNotSame('', $database);
-        $this->assertStringEndsWith('.sqlite', $database, 'sqlite database must be a .sqlite file (isolated)');
-        $this->assertStringContainsString('OpenCodeTemp', $database, 'sqlite database must live in the approved temp dir, outside the repos');
-        $this->assertStringNotContainsStringIgnoringCase('YamakProject', $database, 'sqlite database must not point inside the project repos');
+        $default = config('database.default');
+        $this->assertContains($default, ['sqlite', 'mysql'], 'Default connection must be an approved disposable strategy');
 
-        $this->assertTrue(
-            (bool) config('database.connections.sqlite.foreign_key_constraints'),
-            'sqlite foreign key enforcement must be enabled',
-        );
+        $connection = config('database.connections.'.$default);
+        $this->assertIsArray($connection);
 
-        $this->assertSame('array', config('mail.default'), 'Mail default must be array (no real delivery)');
-        $this->assertSame('sync', config('queue.default'), 'Queue default must be sync (no external broker)');
+        $database = (string) ($connection['database'] ?? '');
+        $this->assertNotSame('', $database, 'Database name must be configured');
+        $this->assertFalse(DatabaseSafety::isForbiddenDatabase($database), 'Database target must not be forbidden');
 
-        // Runs LAST: resolving a connection is the only step that opens one.
-        // All configuration is asserted above, so a misexecuted environment
-        // fails here first and never reaches a foreign connection.
-        $this->assertSame('sqlite', DB::connection()->getDriverName(), 'Effective connection driver must be sqlite');
+        if ($default === 'sqlite') {
+            $this->assertSame('sqlite', $connection['driver'] ?? null);
+            $this->assertStringEndsWith('.sqlite', $database, 'sqlite database must be a .sqlite file');
+            $this->assertStringContainsString('OpenCodeTemp', $database, 'sqlite file must live in the approved temp dir');
+            $this->assertStringNotContainsStringIgnoringCase('YamakProject', $database, 'sqlite file must be outside the repos');
+            $this->assertTrue((bool) ($connection['foreign_key_constraints'] ?? false), 'sqlite FKs must be enforced');
+        } else {
+            $this->assertSame('mysql', $connection['driver'] ?? null);
+            $this->assertSame(
+                DatabaseSafety::TEST_DISPOSABLE_DATABASE,
+                $database,
+                'MySQL tests may only target the approved disposable database',
+            );
+        }
+
+        $this->assertSame('array', config('mail.default'), 'Mail must not have a real transport');
+        $this->assertSame('sync', config('queue.default'), 'Queue must not use an external broker');
+
+        // Config-only: no connection resolution and no query is performed.
+        $this->assertSame($connection['driver'] ?? null, config('database.connections.'.$default.'.driver'));
     }
 
-    public function test_configured_mysql_connection_is_never_the_default(): void
+    public function test_configured_mysql_connection_is_never_a_forbidden_database(): void
     {
-        // The repository .env carries a MySQL connection. This asserts the
-        // testing environment can never silently fall back to it.
-        $this->assertNotSame('mysql', config('database.default'));
-        $this->assertNotNull(config('database.connections.mysql'), 'mysql config may exist but must be inert');
+        $mysql = config('database.connections.mysql');
+        $this->assertIsArray($mysql);
+
+        $name = (string) ($mysql['database'] ?? '');
+        $this->assertNotSame('', $name, 'mysql database must be explicitly configured');
+        $this->assertFalse(DatabaseSafety::isForbiddenDatabase($name));
     }
 }

@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Services\FakeWhatsAppService;
 use App\Services\WhatsAppService;
+use App\Support\DatabaseSafety;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
@@ -14,6 +15,11 @@ abstract class TestCase extends BaseTestCase
         $app = require __DIR__.'/../bootstrap/app.php';
 
         $app->make(Kernel::class)->bootstrap();
+
+        // Laravel calls createApplication() before setUpTraits(), i.e. before
+        // RefreshDatabase can migrate or truncate. Re-check the effective
+        // configuration on every application instance as defence in depth.
+        DatabaseSafety::assertSafeTestingEnvironment();
 
         return $app;
     }

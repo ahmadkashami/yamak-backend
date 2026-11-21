@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\DatabaseSafety;
 use App\Models\Ad;
 use App\Models\AppSetting;
 use App\Models\AppUser;
@@ -32,7 +33,8 @@ class SeedMongoDumpCommand extends Command
     protected $signature = 'yamak:seed-mongo-dump
         {path=../dump/yamak-db : Path to directory containing line-delimited .json dump files}
         {--convert : Convert BSON files to JSON using bsondump before importing}
-        {--clean : Truncate all data tables before importing (keeps roles/permissions)}';
+        {--clean : Truncate all data tables before importing (keeps roles/permissions)}
+        {--force : Required explicit acknowledgement when combined with --clean}';
 
 
     protected $description = 'Import the legacy MongoDB dump into the normalized Laravel/MySQL schema.';
@@ -43,6 +45,22 @@ class SeedMongoDumpCommand extends Command
 
     public function handle(): int
     {
+        // Fail closed BEFORE path checks, BSON conversion, cleanup or any write.
+        // This is configuration-based, not an interactive confirmation prompt.
+        try {
+            DatabaseSafety::assertImportAllowed((bool) $this->option('clean'));
+        } catch (\RuntimeException $exception) {
+            $this->error($exception->getMessage());
+
+            return self::FAILURE;
+        }
+
+        if ($this->option('clean') && ! $this->option('force')) {
+            $this->error('IMPORT SAFETY GATE: --clean requires the explicit --force acknowledgement.');
+
+            return self::FAILURE;
+        }
+
         $path = realpath(base_path($this->argument('path'))) ?: realpath($this->argument('path'));
 
         if (! $path || ! is_dir($path)) {
@@ -91,44 +109,52 @@ class SeedMongoDumpCommand extends Command
         $this->warn('Cleaning all data tables (roles and permissions preserved)...');
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-        $tables = [
-            'personal_access_tokens',
-            'model_has_roles',
-            'model_has_permissions',
-            'request_service',
-            'driver_vehicle',
-            'vehicle_service',
-            'website_service',
-            'branch_service',
-            'user_notifications',
-            'user_cars',
-            'user_otps',
-            'service_requests',
-            'website_carousels',
-            'website_sliders',
-            'website_features',
-            'website_themes',
-            'websites',
-            'app_users',
-            'vehicles',
-            'drivers',
-            'branches',
-            'services',
-            'ads',
-            'app_settings',
-            'companies',
-            'cities',
-            'states',
-            'countries',
-            'users',
-        ];
+        try {
+            $this->truncateDataTables([
+                'personal_access_tokens',
+                'model_has_roles',
+                'model_has_permissions',
+                'request_service',
+                'driver_vehicle',
+                'vehicle_service',
+                'website_service',
+                'branch_service',
+                'user_notifications',
+                'user_cars',
+                'user_otps',
+                'service_requests',
+                'website_carousels',
+                'website_sliders',
+                'website_features',
+                'website_themes',
+                'websites',
+                'app_users',
+                'vehicles',
+                'drivers',
+                'branches',
+                'services',
+                'ads',
+                'app_settings',
+                'companies',
+                'cities',
+                'states',
+                'countries',
+                'users',
+            ]);
+        } finally {
+            // Restore even if a truncate fails, so FK checks never stay off.
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
 
+        $this->info('Database cleaned.');
+    }
+
+    /** @param list<string> $tables */
+    private function truncateDataTables(array $tables): void
+    {
         foreach ($tables as $table) {
             DB::table($table)->truncate();
         }
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
-        $this->info('Database cleaned.');
     }
 
     private function importSysUsers(string $path): void
