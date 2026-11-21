@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Lang;
+use App\Support\SafeDatabaseManager;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -14,7 +15,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Replace the DB manager before any provider can resolve a connection.
+        // The override is inert outside the testing environment.
+        $this->app->extend('db', function ($manager, $app) {
+            if (! $app->environment('testing')) {
+                return $manager;
+            }
+
+            return new SafeDatabaseManager($app, $app['db.factory']);
+        });
     }
 
     /**

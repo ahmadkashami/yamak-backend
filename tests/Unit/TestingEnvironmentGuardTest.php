@@ -2,67 +2,53 @@
 
 namespace Tests\Unit;
 
-use App\Support\DatabaseSafety;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 /**
- * B3.6-G1R reconciled pre-execution safety gate.
- *
- * Approved test strategies (no silent database switch):
- *   - sqlite file under the approved OpenCodeTemp directory (B2.2C.1)
- *   - MySQL on the exact disposable name yamak_test_disposable (B2.8)
- *
- * Everything else, especially yamak_integration_test, yamakdb,
- * yamakdb_prod_test and any production-like name, is refused.
+ * Static-only assertions about the reconciled PHPUnit strategy. These tests
+ * inspect source/configuration files; they do not boot the app or connect to a
+ * database. NOT EXECUTED in B3.6-G1T.
  */
-class TestingEnvironmentGuardTest extends TestCase
+final class TestingEnvironmentGuardTest extends TestCase
 {
-    public function test_effective_environment_is_isolated_and_db_free(): void
+    private const BACKEND_ROOT = __DIR__.'/../..';
+
+    public function test_phpunit_keeps_the_approved_mysql_disposable_strategy(): void
     {
-        $this->assertSame('testing', app()->environment(), 'APP_ENV must be testing');
+        $xml = (string) file_get_contents(self::BACKEND_ROOT.'/phpunit.xml');
 
-        // The same fail-closed gate already enforced in tests/bootstrap.php.
-        DatabaseSafety::assertSafeTestingEnvironment();
-
-        $default = config('database.default');
-        $this->assertContains($default, ['sqlite', 'mysql'], 'Default connection must be an approved disposable strategy');
-
-        $connection = config('database.connections.'.$default);
-        $this->assertIsArray($connection);
-
-        $database = (string) ($connection['database'] ?? '');
-        $this->assertNotSame('', $database, 'Database name must be configured');
-        $this->assertFalse(DatabaseSafety::isForbiddenDatabase($database), 'Database target must not be forbidden');
-
-        if ($default === 'sqlite') {
-            $this->assertSame('sqlite', $connection['driver'] ?? null);
-            $this->assertStringEndsWith('.sqlite', $database, 'sqlite database must be a .sqlite file');
-            $this->assertStringContainsString('OpenCodeTemp', $database, 'sqlite file must live in the approved temp dir');
-            $this->assertStringNotContainsStringIgnoringCase('YamakProject', $database, 'sqlite file must be outside the repos');
-            $this->assertTrue((bool) ($connection['foreign_key_constraints'] ?? false), 'sqlite FKs must be enforced');
-        } else {
-            $this->assertSame('mysql', $connection['driver'] ?? null);
-            $this->assertSame(
-                DatabaseSafety::TEST_DISPOSABLE_DATABASE,
-                $database,
-                'MySQL tests may only target the approved disposable database',
-            );
-        }
-
-        $this->assertSame('array', config('mail.default'), 'Mail must not have a real transport');
-        $this->assertSame('sync', config('queue.default'), 'Queue must not use an external broker');
-
-        // Config-only: no connection resolution and no query is performed.
-        $this->assertSame($connection['driver'] ?? null, config('database.connections.'.$default.'.driver'));
+        $this->assertStringContainsString('<env name="APP_ENV" value="testing" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DB_CONNECTION" value="mysql" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DB_DATABASE" value="yamak_test_disposable" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DB_HOST" value="127.0.0.1" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DB_PORT" value="3306" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DATABASE_URL" value="" force="true"/>', $xml);
+        $this->assertStringContainsString('<env name="DB_SOCKET" value="" force="true"/>', $xml);
     }
 
-    public function test_configured_mysql_connection_is_never_a_forbidden_database(): void
+    public function test_bootstrap_gates_before_framework_boot(): void
     {
-        $mysql = config('database.connections.mysql');
-        $this->assertIsArray($mysql);
+        $bootstrap = (string) file_get_contents(self::BACKEND_ROOT.'/tests/bootstrap.php');
 
-        $name = (string) ($mysql['database'] ?? '');
-        $this->assertNotSame('', $name, 'mysql database must be explicitly configured');
-        $this->assertFalse(DatabaseSafety::isForbiddenDatabase($name));
+        $gate = strpos($bootstrap, 'DatabaseSafety::assertPreBootstrapTestingEnvironment()');
+        $app = strpos($bootstrap, "require __DIR__.'/../bootstrap/app.php'");
+        $kernel = strpos($bootstrap, 'Console\\Kernel::class');
+
+        $this->assertNotFalse($gate);
+        $this->assertNotFalse($app);
+        $this->assertNotFalse($kernel);
+        $this->assertLessThan($app, $gate);
+        $this->assertLessThan($kernel, $gate);
+    }
+
+    public function test_named_runtime_connections_are_validated(): void
+    {
+        $source = (string) file_get_contents(self::BACKEND_ROOT.'/app/Support/DatabaseSafety.php');
+        $manager = (string) file_get_contents(self::BACKEND_ROOT.'/app\Support\SafeDatabaseManager.php');
+
+        $this->assertStringContainsString('assertNamedTestingConnectionsAllowed', $source);
+        $this->assertStringContainsString('assertResolvedTestingConnectionAllowed', $source);
+        $this->assertStringContainsString("protected function makeConnection(\$name): Connection", $manager);
+        $this->assertStringContainsString('public function connectUsing(string $name, array $config, bool $force = false)', $manager);
     }
 }

@@ -10,6 +10,12 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    /** @var array<int, string> */
+    protected array $connectionsToTransact = [];
+
+    /**
+     * Creates the application.
+     */
     public function createApplication()
     {
         $app = require __DIR__.'/../bootstrap/app.php';
@@ -21,7 +27,19 @@ abstract class TestCase extends BaseTestCase
         // configuration on every application instance as defence in depth.
         DatabaseSafety::assertSafeTestingEnvironment();
 
+        // Validate any connection explicitly declared by a test class, even if
+        // Laravel has not resolved it yet.
+        DatabaseSafety::assertNamedTestingConnectionsAllowed($this->connectionsToTransact);
+
         return $app;
+    }
+
+    protected function tearDown(): void
+    {
+        // Catch runtime config mutation performed by a test before teardown.
+        DatabaseSafety::assertSafeTestingEnvironment();
+
+        parent::tearDown();
     }
 
     /**
@@ -33,6 +51,7 @@ abstract class TestCase extends BaseTestCase
     {
         $fake = new FakeWhatsAppService();
         $this->app->instance(WhatsAppService::class, $fake);
+
         return $fake;
     }
 }
