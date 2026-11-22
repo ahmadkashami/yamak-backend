@@ -121,17 +121,23 @@ class MobileMyRequestsReadTest extends TestCase
 
         Sanctum::actingAs($ownerA, ['mobile']);
 
+        // Accepted B3.6 envelope: the 404 path emits no error code and no data.
         $foreignResponse = $this->getJson('/api/mobile/v1/requests/'.$foreign->id)
             ->assertStatus(404)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('errors.code', 'NOT_FOUND');
+            ->assertJsonPath('message', 'not_found')
+            ->assertJsonPath('data', null)
+            ->assertJsonPath('errors', null);
 
         $missingResponse = $this->getJson('/api/mobile/v1/requests/999999')
             ->assertStatus(404)
             ->assertJsonPath('success', false)
-            ->assertJsonPath('errors.code', 'NOT_FOUND');
+            ->assertJsonPath('message', 'not_found')
+            ->assertJsonPath('data', null)
+            ->assertJsonPath('errors', null);
 
         $this->assertSame($foreignResponse->json(), $missingResponse->json());
+        $this->assertNull($foreignResponse->json('data'));
     }
 
     public function test_list_pagination_ordering_and_limits(): void

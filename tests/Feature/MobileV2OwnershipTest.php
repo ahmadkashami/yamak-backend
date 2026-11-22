@@ -65,7 +65,15 @@ class MobileV2OwnershipTest extends TestCase
         $this->assertNotContains($b1->id, $ids);
 
         foreach ($response->json('data') as $row) {
-            $this->assertSame((string) $userA->id, (string) $row['userId']);
+            // B3.7: v2 GET now uses the customer-safe Mobile summary allowlist.
+            $this->assertArrayHasKey('id', $row);
+            $this->assertArrayHasKey('channel', $row);
+            $this->assertArrayHasKey('status', $row);
+            $this->assertArrayHasKey('createdAt', $row);
+            $this->assertArrayNotHasKey('userId', $row);
+            $this->assertArrayNotHasKey('user', $row);
+            $this->assertArrayNotHasKey('driver', $row);
+            $this->assertArrayNotHasKey('platform', $row);
         }
     }
 
@@ -141,9 +149,10 @@ class MobileV2OwnershipTest extends TestCase
             ->assertJsonCount(1, 'data');
 
         $data = $response->json('data');
-        $this->assertSame((string) $userA->id, (string) $data[0]['userId']);
-        if (isset($data[0]['user']) && $data[0]['user'] !== null) {
-            $this->assertSame((string) $userA->id, (string) $data[0]['user']['id']);
-        }
+        // B3.7: no owner identity or driver/admin structure is exposed by v2.
+        $this->assertArrayNotHasKey('userId', $data[0]);
+        $this->assertArrayNotHasKey('user', $data[0]);
+        $this->assertArrayNotHasKey('driver', $data[0]);
+        $this->assertArrayNotHasKey('driverId', $data[0]);
     }
 }
