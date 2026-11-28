@@ -49,11 +49,15 @@ class UserCarController extends Controller
         return response()->success($this->carResource($car));
     }
 
-    public function destroy(UserCar $userCar): \Illuminate\Http\JsonResponse
+    public function destroy(Request $request, string $userCar): \Illuminate\Http\JsonResponse
     {
-        $userCar->delete();
+        $user = $request->user();
+        abort_unless($user instanceof AppUser, 404);
 
-        return response()->success($this->carResource($userCar));
+        $car = $user->cars()->findOrFail($userCar);
+        $car->delete();
+
+        return response()->success($this->carResource($car));
     }
 
     private function carResource(UserCar $car): array
